@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+
+<!##debug issues
+Add in VFC Part D applications and fix up fees summary
+
+
+>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CB Works Permit Fee Calculator</title>
+  <style>
+	body {
+	  font-family: Arial, sans-serif;
+	  background-color: #d9d9d9;
+	  padding: 20px;
+	}
+	
+	.container {
+	  max-width: 800px;
+	  width: 100%;
+	  margin: 0 auto;
+	}
+	.container > * {
+	  width: 100%;
+	  box-sizing: border-box;
+	}
+
+	.form-section,
+	#summary,
+	#conditional-fees {
+	  width: 100%;
+	  box-sizing: border-box;
+	}
+	
+    h1, h2 {
+      text-align: center;
+    }
+    .top-note {
+      background: #fff;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .form-section, #summary {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	  }
+		
+    .section-header {
+      font-size: 1.05em;
+      margin-bottom: 10px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .col {
+      flex: 1;
+    }
+    .form-field {
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    .hint {
+      font-size: 0.9em;
+      color: #333333;
+      margin-bottom: 6px;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .small {
+      font-size: 0.85em;
+      color: #555;
+    }
+		#summary-table {
+	  width: 100%;
+	  border-collapse: collapse;
+	  margin-top: 10px;
+	  
+	}
+
+	#summary-table td.item-cost {
+	  text-align: left;
+	  font-weight: bold;
+	  min-width: 110px;
+	}
+
+	.section-row td {
+	  border-top: 2px solid #bbb;
+	  background: #dbdbdb;
+	  font-weight: bold;
+	  text-align: left;          /* ← Section titles left aligned */
+	  padding-top: 10px;
+	  padding-bottom: 6px;
+	  border-bottom: 1px solid #e6e6e6;
+	}
+		/* Item rows (labels left aligned, indented) */
+	.summary-item-label {
+	  text-align: left;
+	  padding-left: 20px; /* indentation amount */
+	  padding-top: 5px;
+	  padding-bottom: 5px;
+	}
+
+	.summary-item-value {
+	  text-align: centre;
+	}
+
+	.total-row td {
+	  font-size: 1.1em;
+	  font-weight: bold;
+	  border-top: 2px solid #333;
+	  padding-top: 12px;
+	}
+	
+    .buttons {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .buttons button {
+      margin: 0 8px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0078d4;
+      color: #fff;
+      font-size: 1em;
+    }
+    .buttons button:hover {
+      background: #005a9e;
+    }
+
+    /* Print rules: hide interactive elements and form sections; show summary only */
+	@media print {
+	  @page {
+		margin: 12mm;
+	  }
+	  body {
+		margin: 0;
+		padding: 0;
+		background: #fff;
+	  }
+	  /* Hide interactive form + buttons ONLY */
+	  .top-note,
+	  .form-section,
+	  .buttons {
+		display: none !important;
+	  }
+	  /* Show summary + conditional notes */
+	  #summary,
+	  #conditional-fees {
+		display: block !important;
+		width: 100%;
+		box-shadow: none;
+		margin: 0 0 16px 0;
+		padding: 0;
+	  }
+	  #summary table {
+		width: 100%;
+		border-collapse: collapse;
+		background: #dbdbdb;
+	  }
+	  #summary tr {
+		page-break-inside: avoid;
+	  }
+	  .section-row,
+	  .total-row {
+		page-break-inside: avoid;
+	  }
+	}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Canterbury Bankstown Council - Works Permit Fee Calculator</h1>
+
+    <div class="top-note">
+      <p class="small"><strong>Note:</strong> This calculator provides an estimate only, based on your selections of fees payable when making an application for a Works permit. If you are unsure which items apply to you, please contact Council before lodging your application.</p>
+      <p class="small"><strong>Fees shown apply to:</strong> <span id="feeYear"></span></p>
+    </div>
+
+    <!-- Fee and Charges (Update Yearly) 
+	Use spreadsheet to update prices and copy code to this script.-->
+    <script>
+	
+      // EDITABLE FEES SECTION - update here each year
+      const feeYear = "2025/2026";
+      const fees = {
+        vehicleFootpath:  {
+          Single1: 663.50,
+          Single2: 964.00,
+          Dual: 964.00,
+          Other: 903.50,
+        },
+        additionalCrossing: 302.50,
+        roadReserveInspection: 365.50,
+        streetBoundaryLevels: 242.50,
+        roadOpeningPermit: 183.00,
+        stormwaterConnection: 483.00,
+        reinspection: 183.00,
+        reprint: 53.00,
+        crossingAdmin: 122.00,
+        publicDomain:  {
+          plantOccupy1PerDay: 172.50,
+          plantOccupy2PerDay: 258.50,
+          laneClosure1PerDay: 72.50,
+          laneClosure2PerDay: 107.50,
+          urgentProcessing: 354.50,
+          towerCraneTOC: 378.50,
+          towerCraneMonthly: 830.50,
+          publicDomainAdmin: 122.00,
+        },
+        civilStructure:  {
+          awningPlanReview: 632.50,
+          awningHourlyAssessment: 159.50,
+          frontageDesignReview: 1828.00,
+          frontagePlanRecheck: 159.50,
+          frontageInspection: 183.00,
+          temporaryShoring: 791.50,
+          hoardingTypeA: 192.50,
+          hoardingTypeB: 392.50,
+          hoardingTypeC: 392.50,
+          hoardingMonthlyPerMetreA: 52.00,
+          hoardingMonthlyPerMetreBandC: 84.00,
+          civilAdmin: 122.00,
+        },
+        tempfullRoadClosurefee:  {
+          applicationFee: 628.50,
+          fullRoadClosureFeePerDay: 486.50,
+        },
+        drivingLineMarkingfee:  {
+          applicationFee: 375.00,
+          additionalCrossingMarkings: 20.00,
+        },
+        worksZonefee:  {
+          industrial12m: 6600.00,
+          industrial6m: 2644.50,
+          industrialadd6m: 433.00,
+          industrialUrgent: 624.50,
+          residential12m: 1294.00,
+          residentialadd6m: 304.50,
+          residentialUrgent: 251.50,
+        },
+        tempAccessfee:  {
+          tempaccessAdminfee: 435.00,
+          upto300m: 2669.50,
+          morethan300m: 5341.50,
+          oneday: 235.50,
+          sevendays: 511.00,
+          twentyEightdays: 1020.50,
+          fiftySixdays: 2039.00,
+          eightyFourdays: 3051.50,
+        },
+        StormwaterInfofee:  {
+          stormwaterSystemReport: 315.00,
+          supplySWModelingPack: 779.00,
+          gisSearchplanCopyRate: 53.00,
+          gisSearchplanSearchRate: 124.00,
+        },
+        RoadReserveHirefee:  {
+          RoadResHire: 318.00,
+          RoadResBond: 852.50,
+        },
+	    carSharefee:  {
+          carshareapplication: 318.00,
+          carShareMarking: 804.00,
+        },
+        generalAdminFee: 1.00
+      };
+
+    </script>
+
+    <!-- Permit Type Multi-select -->
+    <div class="form-section" id="section-permit-types">
+      <div class="section-header">
+        <strong>Select Works Permit Types (tick any that apply)</strong>
+      </div>
+      <div class="form-row">
+        <label><input type="checkbox" id="chkPublicDomain" style="display:inline-block;"> Public Domain activities</label>
+      </div>
+      <div class="form-row">
+        <label><input type="checkbox" id="chkCivilStructure" style="display:inline-block;"> Civil Structure Over Public Domain</label>
+      </div>
+      <div class="form-row">
+        <label><input type="checkbox" id="chkVehicleFootpath" style="display:inline-block;"> Vehicle Footpath Crossing</label>
+      </div>
+	  <div class="form-row">
+        <label><input type="checkbox" id="chktempfullRoadClose" style="display:inline-block;"> Temporary Full Road Closure (For Construction)</label>
+      </div>
+	  <div class="form-row">
+        <label><input type="checkbox" id="chkdrivewayLineMarking" style="display:inline-block;"> Driveway Line Marking</label>
+      </div>
+	  <div class="form-row">
+        <label><input type="checkbox" id="chkworksZone" style="display:inline-block;"> Works Zones</label>
+      </div>
+	  <div class="form-row">
+        <label><input type="checkbox" id="chktempAccess" style="display:inline-block;"> Temporary Access over Council Land</label>
+      </div>
+	  <div class="form-row">
+        <label><input type="checkbox" id="chkStormwaterInfo" style="display:inline-block;"> Stormwater Information</label>
+      </div>
+	   <div class="form-row" id="rowRoadReserveHire" style="display:none;" > 
+	    <label><input type="checkbox" id="chkRoadReserveHire" style="display:inline-block;" disabled> Road Reserve Hire</label>
+			<!--Road Res Hire - delete row style="display:none;" and disabled to add into form (all fully working)-->
+	   </div>
+	   <div class="form-row" id="rowCarShare" > 
+	    <label><input type="checkbox" id="chkCarShare" style="display:inline-block;"> Car Share Parking Space</label>
+	   </div>
+	   <div class="form-row" id="rowPartD" > 
+	    <label><input type="checkbox" id="chkPrtD" style="display:inline-block;"> Part D - DA/CDC Development Related Vehicle Crossings</label>
+	   </div>
+    </div>
+
+    <!-- PUBLIC DOMAIN SECTION -->
+    <div class="form-section" id="section-public-domain" style="display:none;">
+      <div class="section-header"><span>Public Domain — Activities (e.g. plant, lane closures)</span></div>
+      <!-- Standing Plant / Mobile Crane -->
+      <div class="form-field">
+        <label>Standing Plant / Concrete Pump / Mobile Crane (may occupy footpath/road)</label>
+        <div class="hint">Will standing plant occupy road lane(s)/footpath?</div>
+        <div class="form-row">
+          <div class="col">
+            <label class="small">Require standing plant?</label>
+            <div>
+				<select id="plantNeeded">
+				  <option value="no">No</option>
+				  <option value="yes">Yes</option>
+				</select>
+            </div>
+          </div>
+        </div>
+        <div id="plantDetails" style="display:none; margin-top:10px;">
+          <label>Number of lanes/footpath to occupy</label>
+          <select id="plantLanes">
+            <option value="">-- Select --</option>
+            <option value="1">Occupy 1 lane/footpath per day</option>
+            <option value="2">Occupy 2 lanes/footpath per day</option>
+          </select>
+          <label style="margin-top:8px;">Number of days (whole number)</label>
+          <input id="plantDays" type="number" min="0" step="1" value="0" />
+        </div>
+      </div>
+      <!-- Lane closure -->
+      <div class="form-field">
+        <label>Lane closure (no standing plant)</label>
+        <div class="hint">Lane closures are subject to conditions</div>
+        <div class="form-row">
+          <div class="col">
+            <label class="small">Lane closure required?</label>
+            <div>
+             <select id="laneClosure">
+			  <option value="no">No</option>
+			  <option value="yes">Yes</option>
+			</select>
+            </div>
+          </div>
+        </div>
+        <div id="laneClosureDetails" style="display:none; margin-top:10px;">
+          <label>Number of lanes/footpath to occupy</label>
+          <select id="laneClosureLanes">
+            <option value="">-- Select --</option>
+            <option value="1">Close 1 lane/footpath per day</option>
+            <option value="2">Close 2 lanes/footpath per day</option>
+          </select>
+          <label style="margin-top:8px;">Number of days (whole number)</label>
+          <input id="laneClosureDays" type="number" min="0" step="1" value="0" />
+        </div>
+      </div>
+      <!-- Tower Crane -->
+      <div class="form-field">
+        <label>Tower Crane</label>
+        <div class="hint">Tower crane requires an additional application fee and a monthly fee while in place.</div>
+        <div>
+         <select id="towerCrane">
+		  <option value="no">No</option>
+		  <option value="yes">Yes</option>
+		</select>
+        </div>
+        <div id="towerCraneDetails" style="display:none; margin-top:10px;">
+          <label>Provide the number of months the tower crane will be in place (whole number)</label>
+          <input id="towerMonths" type="number" min="0" step="1" value="0" />
+        </div>
+      </div>
+	        <!-- Urgent processing -->
+      <div class="form-field" id="urgentProcessingWrapper" style="display:none;">
+	   <label>Urgent permit approval required?</label>
+        <div class="hint">If urgent, Council can process your work permit within 2 working days for an additional fee.</div>
+        <div>
+		<select id="urgentProcessing">
+		  <option value="no">No</option>
+		  <option value="yes">Yes</option>
+		</select>
+        </div>
+      </div>
+	  </div>
+
+    <!-- CIVIL STRUCTURE SECTION -->
+    <div class="form-section" id="section-civil-structure" style="display:none;">
+      <div class="section-header"><span>Civil Structure Over Public Domain</span></div>
+      <!-- Construct Awning -->
+      <div class="form-field">
+        <label>Construct Awning over footway reserve</label>
+        <div class="hint">Plan review and approval fee, plus additional assessment per hour as required.</div>
+        <div>
+			<select id="awning">
+			<option value="no">No</option>
+			<option value="yes">Yes</option>
+		</select>
+        </div>
+      </div>
+      <!-- Frontage infrastructure Works -->
+      <div class="form-field">
+        <label>Frontage Infrastructure Works</label>
+        <div class="hint">Paving, kerb & gutter, landscaping, stormwater — fees for review, recheck and inspections apply.</div>
+        <div>
+		<select id="frontageWorks">
+			  <option value="no">No</option>
+			  <option value="yes">Yes</option>
+		</select>
+        </div>
+      </div>
+      <!-- Temporary Shoring -->
+      <div class="form-field">
+        <label>Temporary Shoring</label>
+        <div class="hint">Temporary shoring, including ground anchors, in the road reserve.</div>
+        <div>
+			<select id="shoring">
+			  <option value="no">No</option>
+			  <option value="yes">Yes</option>
+			</select>
+        </div>
+      </div>
+	  <!-- Hoardings -->
+  		<label>Hoardings / Scaffolding</label>
+        <div class="hint">Fees apply per month hoarding is in place and per lineal metre used. Fees vary by hoarding type.</div>
+        <div>
+			<select id="hoardingNeeded">
+				  <option value="no">No</option>
+				  <option value="yes">Yes</option>
+			</select>
+	 </div>	
+	<div class="form-field">
+		 <div id="hoardingDetails" style="display:none; margin-top:10px;">
+	  <label>Hoarding Type and Details</label>
+			<div class="hint">Each hoarding type can be selected independently. Minimum Values are 1m and 1 Month</div>
+			<label style="margin-top:10px;">Type A – Sheeted Panels</label>
+			<select id="hoardingA">
+			  <option value="no">Not Used</option>
+			  <option value="yes">Yes</option>
+			</select>
+			<div class="hint" style="margin-top:10px;">Type A lineal metres</div>
+			<input style="margin-top:-5px;" id="hoardingAMetres" type="number" min="1" value="">
+			<div class="hint"style="margin-top:8px;">Type A months inplace</div>
+			<input style="margin-top:-5px;" id="hoardingAMonths" type="number" min="1" value="">
+
+			<label style="margin-top:10px;">Type B – Overhead Protective Structure</label>
+			<select id="hoardingB">
+			  <option value="no">Not Used</option>
+			  <option value="yes">Yes</option>
+			</select>
+			<div class="hint" style="margin-top:10px;">Type B lineal metres</div>
+			<input style="margin-top:-5px;" id="hoardingBMetres" type="number" min="1" value="">
+			<div class="hint"style="margin-top:8px;">Type B months inplace</div>
+			<input style="margin-top:-5px;" id="hoardingBMonths" type="number" min="1" value="">
+
+			<label style="margin-top:10px;">Type C – Full Face Scaffolding</label>
+			<select id="hoardingC">
+			  <option value="no">Not Used</option>
+			  <option value="yes">Yes</option>
+			</select>
+			<div class="hint" style="margin-top:10px;">Type C lineal metres</div>
+			<input style="margin-top:-5px;" id="hoardingCMetres" type="number" min="1" value="">
+			<div class="hint"style="margin-top:8px;">Type C months inplace</div>
+			<input style="margin-top:-5px;" id="hoardingCMonths" type="number" min="1" value="">
+		</div>
+	</div>
+      <!-- Other Civil works -->
+      <div class="form-field">
+        <label>Other Civil Works (new footpath, stairs, retaining walls)</label>
+        <div class="hint">Other civil works are quoted per project. Contact Council for pricing.</div>
+        <div>
+         <select id="otherCivil">
+		  <option value="no">No</option>
+		  <option value="yes">Yes</option>
+		</select>
+        </div>
+      </div>
+    </div>
+
+    <!-- VEHICLE FOOTPATH SECTION  -->
+    <div class="form-section" id="section-vehicle-footpath" style="display:none;">
+      <div class="section-header"><span>Vehicle Footpath Crossing</span></div>
+      <div class="form-field">
+        <label for="footpathType">Vehicle Footpath Crossing Type</label>
+        <div class="hint">Choose the type of development the crossing applies to.</div>
+        <select id="footpathType">
+          <option value="">-- Please Select --</option>
+          <option value="Single1">Single Dwelling (1 Crossing)</option>
+          <option value="Single2">Single Dwelling (2 Crossings)</option>
+          <option value="Dual">Dual Occupancies</option>
+          <option value="Other">Other Developments (1 Crossing)</option>
+        </select>
+      </div>
+      <div class="form-field" id="additionalCrossingDetails" style="display:none;">
+        <label for="additionalCrossing">Additional Crossings</label>
+        <div class="hint">Select the number of extra crossings required for Other Development.</div>
+        <select id="additionalCrossing">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="streetBoundaryLevels">Street Boundary Alignment Levels</label>
+        <div class="hint">Alignment of levels between internal boundary and Council’s road reserve and/or adjoining public land.</div>
+        <select id="streetBoundaryLevels">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="roadOpeningPermit">DA/CDC Related Road Opening Permit</label>
+        <div class="hint">Used for permits to connect public utility service to development sites.</div>
+        <select id="roadOpeningPermit">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="stormwaterConnection">Plan & Review and Connection to Stormwater</label>
+        <div class="hint">Stormwater drainage works including stormwater connection to Council’s Street kerb or Council’s stormwater drainage system.</div>
+        <select id="stormwaterConnection">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+    </div>
+		
+	<!--Temp Full Road Closure-->
+	<div class="form-section" id="section-temp-FullRoad-Closure" style="display:none;">
+      <div class="section-header"><span>Temp Full Road Closure (For Construction)</span></div>
+
+      <div class="form-field">
+        <label for="tempRoadClosureApp">Do you require a temporary full road closure for Construction Purposes?</label>
+        <div class="hint">Must be lodged 10 weeks prior to closure date. </div>
+        <select id="TempRoadClosureSelect">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+		<div id="FullRoadClosureDetails" style="display:none; margin-top:10px;">
+			<label style="margin-top:8px;">Number of days (whole number) of closure</label>
+			<div class="hint">Approved duration may be subject to approval by Council.</div>
+			<input id="fullRoadClosureDays" type="number" min="0" step="1" value="0" />
+		</div>	
+      </div>
+    </div>	
+		
+	<!--Driveway Line Marking-->
+	<div class="form-section" id="section-driveway-line-marking" style="display:none;">
+      <div class="section-header"><span>Driveway Line Marking</span></div>
+
+      <div class="form-field">
+        <label for="drivwayLineMarkingApp">Application for marking of 2 Lines either side of each driveway. Addtional driveways must be included on same application form for the lower fee</label>
+        <div class="hint">Do you require Driveway Line marking?</div>
+        <select id="drivewayLineMarkingSelect">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+		<div id="drivewayLineMarkingDetails" style="display:none; margin-top:10px;">
+			<label style="margin-top:8px;">Number of Additional Driveway markings</label>
+			<div class="hint">Additional crossings can also be marked. Refer to Addtional Fees.</div>
+		<select id="drivewayLineMarkingNum">
+          <option value="0">No Additional Driveways</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+		</div>	
+      </div>
+    </div>
+	
+	<!--Work Zones-->
+	<div class="form-section" id="section-works-zones" style="display:none;">
+      <div class="section-header"><span>Works Zones</span></div>
+      <div class="form-field">
+        <label for="workzonesApp">Type of Work Zone required</label>
+        <select id="workZoneSelect">
+          <option value="">-- Please Select --</option>
+          <option value="IndustialWZ">Commercial/Industrial or Multi Unit Residential</option>
+          <option value="ResidentialWZ">Single/Dual Occupancy Residential</option>
+        </select>
+		
+		<!--Industrial Works Zones -->		
+		<div id="workZoneIndustrialDetails" style="display:none; margin-top:10px;">
+			<label for="WZadditionalLenghts">Work Zones length, if exceeding 12m.</label>
+			<div class="hint">Length can only be increased by 6m increments beyond the initial 12m length, regardless of site conditions.</div>
+		<select id="workZoneIndustrialExtraLengths">
+          <option value="0">0 - 12m Minimum </option>
+          <option value="1">1 x 6m (18m WZ Total)</option>
+          <option value="2">2 x 6m (24m WZ Total)</option>
+          <option value="3">3 x 6m (30m WZ Total)</option>
+          <option value="4">4 x 6m (36m WZ Total)</option>
+		  <option value="5">5 x 6m (42m WZ Total)</option>
+        </select>
+			<label style="margin-top:8px;">Number of Months for Works Zone (whole number)</label>
+			<div class="hint">The first 6 Months of the work zone is included in the application.</div>
+			<input id="workZoneIndustrialmonths" type="number" min="6" step="1" value="6" />
+			<label style="margin-top:8px;">Do you need quick approval (within 2 Weeks)</label>
+		<select id="workZoneIndustrialUrgent">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes, approval is required in 2 Weeks</option>
+          <option value="no">No, application will be 8 weeks in advance.</option>
+        </select>
+		</div>
+		
+		<!--Residential Works zones -->		
+		<div id="workZoneResidentialDetails" style="display:none; margin-top:10px;">
+			<label style="margin-top:8px;">Number of Months for Works Zone (whole number)</label>
+			<div class="hint">The first 6 Months of the work zone is included in the application.</div>
+			<input id="workZoneResidentialmonths" type="number" min="6" step="1" value="6" />
+			<label style="margin-top:8px;">Do you need quick approval (within 2 Weeks)</label>
+		<select id="workZoneresidentialUrgent">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes, approval is required in 2 Weeks</option>
+          <option value="no">No, application will be 8 weeks in advance.</option>
+        </select>
+		</div>
+		</div>	
+      </div>
+		
+		<!--Temp Land Access-->
+	<div class="form-section" id="section-Temp-land-Access" style="display:none;">
+      <div class="section-header"><span>Temporary Access over Council Land</span></div>
+      <div class="form-field">
+        <label for="tempAccessApp">Area of land required for access</label>
+		<div class="hint">Area (sqM) must account for all roads, fire trails and parks areas.</div>
+        <select id="tempAccessSelect">
+          <option value="">-- Please Select --</option>
+          <option value="upto300m">Up to 300m²</option>
+          <option value="morethan300m">More than 300m²</option>
+        </select>
+		<label style="margin-top:8px;">Number of days access is required</label>
+		<div class="hint">The applicant must reapply for access for periods that exceed 84 days, including the payment of all asscioated fees.</div>
+		<select id="tempAccessDaysNum">
+          <option value="">-- Please Select --</option>		
+          <option value="oneday">1 Day Only</option>
+          <option value="sevendays">Up to 7 Days</option>
+          <option value="twentyEightdays">8 to 28 Days</option>
+          <option value="fiftySixdays">29 to 56 Days</option>
+          <option value="eightyFourdays">57 to 84 Days</option>
+        </select>
+	  </div>
+    </div>
+	
+		<!--Stormwater Information-->
+	<div class="form-section" id="section-Stormwater-information" style="display:none;">
+      <div class="section-header"><span>Stormwater Information</span></div>
+
+      <div class="form-field">
+        <label for="stormwaterInfoApp">Do you require a Stormwater System Report?</label>
+         <select id="stormwaterSystemSelect">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+        <label for="stormwaterdatapackApp">Do you require a Stormwater Modelling Data Package?</label>
+         <select id="stormwaterDataPackSelect">
+          <option value="">-- Please Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+	</div>
+    </div>
+	
+	<!--Road Reserve Hire-->
+	<div class="form-section" id="section-Road-Reserve-Hire" style="display:none;">
+      <div class="section-header"><span>Road Reserve Hire</span></div>
+      <div class="form-field">
+        <label for="roadResApp">Do you wish to hire a Road Reserve?</label>
+         <div class="hint">Applications must be made at least 7 days in advance, and provide Public Liability Insurance of at least $20 million and Workers Compensation Insurance. Hire subject to conditions.</div>
+			 <select id="roadReserveHireSelect">
+			  <option value="">-- Please Select --</option>
+			  <option value="yes">Yes</option>
+			  <option value="no">No</option>
+			</select>
+		 </div>
+    </div>
+		
+	<!-- Car Share Parking-->
+	<div class="form-section" id="section-Car-Share-Parking" style="display:none;">
+      <div class="section-header"><span>Car Share Parking</span></div>
+      <div class="form-field">
+        <label for="carShareApp">Do you wish to apply to create a Car Share Parking Space?</label>
+        <div class="hint">You must ensure the location and car share meet the requirements of Councils Car Share Policy. The Policy is avliable here: <a href="https://www.cbcity.nsw.gov.au/your-council/policies-and-codes/car-share-policy" target="_blank">CBC City Car Share Policy</a></div>
+		<div class="hint">Only 1 Car Share parking space can be applied for per application.</div>
+			 <select id="carShareSelect">
+			  <option value="">-- Please Select --</option>
+			  <option value="yes">Yes</option>
+			  <option value="no">No</option>
+			</select>
+		 </div>
+    </div>
+	
+	<!-- Part D VFC-->
+	<div class="form-section" id="section-Part-D" style="display:none;">
+      <div class="section-header"><span>Part D - DA/CDC related Combined Work Permit Applications</span></div>
+      <div class="form-field">
+	  <div class="hint">The combined Part D Work Permit application is permits that are development (DA or CDC) related. </div>
+	  <div class="hint">Combined Part D includes fees for:
+	  <ul>
+	  <li>Footpath Damage Inpections (FDI) </li>
+	  <li>Street Boundary Levels (SBAL)</li>
+	  <li>Road Opening Permit (RO)  </li>
+	  <li>Administration Fee (ADM) </li>
+	  </ul>
+	  You have the option to select a Vehicle Crossing(VFC) and/or Stormwater Conection(SWCP). </a>
+	  </div>
+        <label for="partDType">Part D Vehicle Footpath Crossing Type</label>
+        <div class="hint">Choose the type of development the crossing applies to.</div>
+        <select id="partDTypeSelect">
+          <option value="">-- Please Select --</option>
+          <option value="Single1">Single Dwelling (1 Crossing)</option>
+          <option value="Single2">Single Dwelling (2 Crossings)</option>
+          <option value="Dual">Dual Occupancies</option>
+          <option value="Other">Other Developments (1 Crossing)</option>
+		  <option value= "No">No Crossings</option>
+        </select>
+      </div>
+      <div class="form-field" id="partDAdditionalCrossingDetails" style="display:none;">
+        <label for="partDAdditionalCrossing">Additional Crossings</label>
+        <div class="hint">Select the number of extra crossings required for Other Development.</div>
+        <select id="PartDadditionalCrossingSelect">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+	  <div class="form-field">
+        <label for="partDstormwaterConnection">Plan & Review and Connection to Stormwater</label>
+        <div class="hint">Stormwater drainage works including stormwater connection to Council’s Street kerb or Council’s stormwater drainage system.</div>
+        <select id="partDstormwaterConnection">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+		 </div>
+    </div>
+	
+
+    <!-- SUMMARY -->
+    <div id="summary" class="summary">
+      <h2>Works Permit Cost Summary</h2>
+      <table id="summary-table"></table>
+      <hr>
+
+		<div id="conditional-fees">
+      <div id="addtionalFeesHeading" class="conditional-note" style="display:none;">
+			<p><strong>Additional fees may apply:</strong></p>
+	  </div>
+	  <div id="note-Public-Works-Admin-Note" style="display:none;">
+	  <p><strong>Public Domain Activities:</strong></p>
+	  <ul>
+	  <li>
+		Public Domain activities must be lodged as separate applications via Council’s online system, which may result in multiple administration fees being charged. <br>
+		Where applications relate to the same address/project/applicant and they are made at the same time, Council may assess them as a single application and refund or credit any additional administration fees.
+	  </li>
+	  </ul>
+		</div>
+			<div id="civil-structure-notes" style="display:none;">
+					  <p><strong>Civil Structure Over Public Domain:</strong></p>
+					  <ul>
+					  <li id="note-Civil-Admin-Note" style="display:none;">
+						  Civil Structure Over Public Domain activities must be lodged as separate applications via Council’s online system, which may result in multiple administration fees being charged. <br>
+						  Where applications relate to the same address/project/applicant and they are made at the same time, Council may assess them as a single application and refund or credit any additional administration fees.
+					  </li>
+						<li id="note-awning" style="display:none;">
+						  Awnings – If additional assessments are required, they will be billed at:
+						  $<span id="feeawningHourlyAssessment"></span> per hour
+						</li>
+						<li id="note-frontage-recheck" style="display:none;">
+						  Frontage works – Plan recheck fee:
+						  $<span id="feefrontagePlanRecheck"></span> each
+						</li>
+						<li id="note-frontage-inspection" style="display:none;">
+						  Frontage works – Additional public domain works inspections:
+						  $<span id="feefrontageInspection"></span> each
+						</li>
+					  </ul>
+					</div>
+				<div id="vehicle-footpath-notes" style="display:none;">
+				  <p><strong>Vehicle Footpath Crossing:</strong></p>
+				  <ul>
+					<li id="note-reinspection">Reinspection (failed inspection): $<span id="feeReinspection"></span> each</li>
+					<!-- <li id="note-reprint">Reprint or reissue of Works Permit Approval: $<span id="feeReprint"></span> each</li> delete -->
+				  </ul>
+				</div>
+				<div id="Driveway-line-marking-notes" style="display:none;">
+				  <p><strong>Driveway Line Marking:</strong></p>
+				  <ul>
+					<li id="note-driveway-line-marking">There is no limit to the number of driveway line markings, except that they are within the same street or adjacent corner. Line marking of extra crossings costs $<span id="feedrivewayadditionalMarkings"></span> each. They MUST all be requested on the same application.</li>
+				  </ul>
+				</div>
+				<div id="stormwater-info-notes" style="display:none;">
+				  <p><strong>Stormwater Information:</strong></p>
+				  <ul>
+					<li id="note-stormwater-info-copy">Plan copies are made at $<span id="feegisSearchplanCopyRate"></span> per half hour or part there-of.</li>
+					<li id="note-stormwater-info-search">GIS plan searches are made at $<span id="feegisSearchplanSearchRate"></span> per half hour or part there-of.</li>
+					<li>Data maps not readily avaliable from Customer service. GIS plan searches are for larger/catchment areas.</li>
+				  </ul>
+				</div>
+				<div id="car-Share-Info-notes" style="display:none;">
+				  <p><strong>Stormwater Information:</strong></p>
+				  <ul>
+					<li id="note-Car-Share-Marking">The additional Installation charge of: $<span id="feeCarShareMarking"></span> will only be required should your applciation be succcesful.</li>
+					<li id="note-Car-Share-Poles">Additional charges for bay marking will be made on an 'actual costs' basis. This will be supplied as a quote from Council. </li>
+				  </ul>
+				</div>
+		</div>
+      <p id="disclaimer" class="small" style="margin-top:10px;"><em>Final fees may vary. Please confirm requirements with Council before applying.</em></p>
+	  <p class="small"><strong>Fees apply to:</strong> <span id="feeYear2"></span></p>
+      <p id="timestamp" style="font-size: 0.8em; color: #555; margin-top: 10px;"></p>
+    </div>
+
+    <div class="buttons">
+	  <button type="button" id="resetBtn">Reset</button>
+      <button type="button" id="printBtn">Print Summary</button>
+    </div>
+      
+	<!-- end of container -->
+	  </div>
+	<!-- end of container -->
+
+  <script>
+    // Initialize text values
+  document.getElementById("feeYear").innerText = feeYear;
+	document.getElementById("feeYear2").innerText = feeYear;
+    document.getElementById("feeReinspection").innerText = fees.reinspection.toFixed(2);
+    //document.getElementById("feeReprint").innerText = fees.reprint.toFixed(2);
+	document.getElementById("feeawningHourlyAssessment").innerText = fees.civilStructure.awningHourlyAssessment.toFixed(2);
+	document.getElementById("feefrontagePlanRecheck").innerText = fees.civilStructure.frontagePlanRecheck.toFixed(2);
+	document.getElementById("feefrontageInspection").innerText = fees.civilStructure.frontageInspection.toFixed(2);
+	document.getElementById("feedrivewayadditionalMarkings").innerText = fees.drivingLineMarkingfee.additionalCrossingMarkings.toFixed(2);
+	document.getElementById("feegisSearchplanCopyRate").innerText = fees.StormwaterInfofee.gisSearchplanCopyRate.toFixed(2);
+	document.getElementById("feegisSearchplanSearchRate").innerText = fees.StormwaterInfofee.gisSearchplanSearchRate.toFixed(2);
+	document.getElementById("feeCarShareMarking").innerText = fees.carSharefee.carShareMarking.toFixed(2);
+	
+    // Permit type checkboxes
+    const chkPublicDomain = document.getElementById("chkPublicDomain");
+    const chkCivilStructure = document.getElementById("chkCivilStructure");
+    const chkVehicleFootpath = document.getElementById("chkVehicleFootpath");
+	const chktempfullRoadClose = document.getElementById("chktempfullRoadClose");
+	const chkdrivewayLineMarking = document.getElementById("chkdrivewayLineMarking");
+	const chkworksZone = document.getElementById("chkworksZone");
+	const chktempAccess = document.getElementById("chktempAccess");
+	const chkStormwaterInfo = document.getElementById("chkStormwaterInfo");
+	const chkRoadReserveHire = document.getElementById("chkRoadReserveHire");
+	const chkCarShare = document.getElementById("chkCarShare");
+	const chkPrtD = document.getElementById("chkPrtD");
+	
+    // Section containers
+    const secPublicDomain = document.getElementById("section-public-domain");
+    const secCivilStructure = document.getElementById("section-civil-structure");
+    const secVehicleFootpath = document.getElementById("section-vehicle-footpath");
+    const secFullRoadClosure = document.getElementById("section-temp-FullRoad-Closure");
+	const secDrivewayLineMarking = document.getElementById("section-driveway-line-marking");
+	const secWorksZones = document.getElementById("section-works-zones");
+	const secTempAccess = document.getElementById("section-Temp-land-Access");
+	const secStormwaterInfo = document.getElementById("section-Stormwater-information");
+	const secRoadResHire = document.getElementById("section-Road-Reserve-Hire");
+	const secCarShare = document.getElementById("section-Car-Share-Parking");
+	const secPartD = document.getElementById("section-Part-D");
+
+    // Public Domain controls
+    const plantNeeded = document.getElementById("plantNeeded");
+    const plantDetails = document.getElementById("plantDetails");
+    const plantLanes = document.getElementById("plantLanes");
+    const plantDays = document.getElementById("plantDays");
+    const laneDetails = document.getElementById("laneClosureDetails");
+    const laneClosureLanes = document.getElementById("laneClosureLanes");
+    const laneClosureDays = document.getElementById("laneClosureDays");
+    const urgentProcessing = document.getElementById("urgentProcessing");
+	const towerCrane = document.getElementById("towerCrane");
+    const towerDetails = document.getElementById("towerCraneDetails");
+    const towerMonths = document.getElementById("towerMonths");
+
+    // Civil Structure controls
+    const awning = document.getElementById("awning");
+	const frontageWorks = document.getElementById("frontageWorks");
+	const shoring = document.getElementById("shoring");
+	const otherCivil = document.getElementById("otherCivil");
+    const hoardingNeeded = document.getElementById("hoardingNeeded");
+    const hoardingDetails = document.getElementById("hoardingDetails");
+
+    // Vehicle Footpath controls
+    const footpathType = document.getElementById("footpathType");
+    const additionalCrossing = document.getElementById("additionalCrossing");
+    const additionalCrossingDetails = document.getElementById("additionalCrossingDetails");
+    const streetBoundaryLevels = document.getElementById("streetBoundaryLevels");
+    const roadOpeningPermit = document.getElementById("roadOpeningPermit");
+    const stormwaterConnection = document.getElementById("stormwaterConnection");
+	
+	 // Temp Full Road Closure Controls
+    const TempRoadClosureSelect = document.getElementById("TempRoadClosureSelect");
+    const fullRoadClosureDays = document.getElementById("fullRoadClosureDays");
+	const FullRoadClosureDetails = document.getElementById("FullRoadClosureDetails");
+	
+	
+	// Driveway line marking Controls
+    const drivewayLineMarkingSelect = document.getElementById("drivewayLineMarkingSelect");
+    const drivewayLineMarkingNum = document.getElementById("drivewayLineMarkingNum");
+	const drivewayLineMarkingDetails = document.getElementById("drivewayLineMarkingDetails");
+	
+	// Works Zones Controls
+    const workZoneSelect = document.getElementById("workZoneSelect");
+    const workZoneIndustrialExtraLengths = document.getElementById("workZoneIndustrialExtraLengths");
+	const workZoneIndustrialmonths = document.getElementById("workZoneIndustrialmonths");
+	const workZoneIndustrialUrgent = document.getElementById("workZoneIndustrialUrgent");
+	const workZoneResidentialmonths = document.getElementById("workZoneResidentialmonths");
+	const workZoneresidentialUrgent = document.getElementById("workZoneresidentialUrgent");
+	const workZoneResidentialDetails = document.getElementById("workZoneResidentialDetails");
+	const workZoneIndustrialDetails = document.getElementById("workZoneIndustrialDetails");	
+	
+	// Temp Access Controls
+    const tempAccessSelect = document.getElementById("tempAccessSelect");
+    const tempAccessDaysNum = document.getElementById("tempAccessDaysNum");
+	const tempAccessDetails = document.getElementById("tempAccessDetails");
+	
+	// Stormwater info Controls
+    const stormwaterDataPackSelect = document.getElementById("stormwaterDataPackSelect");
+    const stormwaterSystemSelect = document.getElementById("stormwaterSystemSelect");
+	const stormwaterReport = document.getElementById("stormwaterSystemSelect");
+	const stormwaterData = document.getElementById("stormwaterDataPackSelect");
+	
+	// Road Res Hire Controls
+    const roadReserveHireSelect = document.getElementById("roadReserveHireSelect");
+	
+	// Car share Controls
+    const carShareSelect = document.getElementById("carShareSelect");
+	
+	// Part-D Controls
+    const partDTypeSelect = document.getElementById("partDTypeSelect");
+    const PartDadditionalCrossingSelect = document.getElementById("PartDadditionalCrossingSelect");
+    const partDAdditionalCrossingDetails = document.getElementById("partDAdditionalCrossingDetails");
+    const partDstormwaterConnection = document.getElementById("partDstormwaterConnection");
+		
+
+    // Summary table element
+    const summaryTable = document.getElementById("summary-table");
+    const timestampEl = document.getElementById("timestamp");
+	
+    // Currency formatting
+    function money(val) {
+      return val.toFixed(2);
+    }
+
+    // Show/hide and reset sections when permit type checkboxes change
+		function resetFields(fieldMap) {
+	  Object.entries(fieldMap).forEach(([id, value]) => {
+		const el = document.getElementById(id);
+		if (el) el.value = value;
+	  });
+	}
+	
+	chkPublicDomain.addEventListener("change", () => {
+	  secPublicDomain.style.display = chkPublicDomain.checked ? "block" : "none";
+	  if (!chkPublicDomain.checked) {
+		plantDetails.style.display = "none";
+		laneDetails.style.display = "none";
+		towerDetails.style.display = "none";
+		resetFields({
+		  plantNeeded: "no",
+		  plantLanes: "",
+		  plantDays: "0",
+		  laneClosure: "no",
+		  laneClosureLanes: "",
+		  laneClosureDays: "0",
+		  urgentProcessing: "no",
+      towerCrane: "no",
+      towerMonths: "0"
+		});
+	  }
+	  calculate();
+	});
+
+	chkCivilStructure.addEventListener("change", () => {
+      secCivilStructure.style.display = chkCivilStructure.checked ? "block" : "none";
+	  if (!chkCivilStructure.checked) {
+		hoardingDetails.style.display = "none";
+		resetFields({
+		  awning: "no",
+		  frontageWorks: "no",
+		  shoring: "no",
+		  otherCivil: "no",
+		  hoardingNeeded: "no",
+		  hoardingA: "no",
+		  hoardingAMetres: "",
+		  hoardingAMonths: "",
+		  hoardingB: "no",
+		  hoardingBMetres: "",
+		  hoardingBMonths: "",
+		  hoardingC: "no",
+		  hoardingCMetres: "",
+		  hoardingCMonths: ""
+		  });
+	  }
+	  calculate();
+	});
+
+	chkVehicleFootpath.addEventListener("change", () => {
+      secVehicleFootpath.style.display = chkVehicleFootpath.checked ? "block" : "none";
+	  if (!chkCivilStructure.checked) {
+		additionalCrossingDetails.style.display = "none";
+		resetFields({
+		  footpathType: "",
+		  additionalCrossing: "",
+		  streetBoundaryLevels: "no",
+		  roadOpeningPermit: "no",
+		  stormwaterConnection : "no"
+		  });
+	  }
+	  calculate();
+	});
+
+	chktempfullRoadClose.addEventListener("change", () => {
+	  secFullRoadClosure.style.display = chktempfullRoadClose.checked ? "block" : "none";
+	  if (!chktempfullRoadClose.checked) {
+	  FullRoadClosureDetails.style.display = "none";
+		resetFields({
+		  TempRoadClosureSelect: "",
+		  fullRoadClosureDays: "0"
+		});
+	  }
+	  calculate();
+	});
+
+	chkdrivewayLineMarking.addEventListener("change", () => {
+      secDrivewayLineMarking.style.display = chkdrivewayLineMarking.checked ? "block" : "none";
+	  if (!chkdrivewayLineMarking.checked) {
+	  drivewayLineMarkingDetails.style.display = "none";
+		resetFields({
+		  drivewayLineMarkingSelect: "",
+		  drivewayLineMarkingNum: "0"
+		});
+	  }
+	  calculate();
+	});
+		
+	chkworksZone.addEventListener("change", () => {
+      secWorksZones.style.display = chkworksZone.checked ? "block" : "none";
+	  if (!chkworksZone.checked) {
+	  workZoneResidentialDetails.style.display = "none";
+	  workZoneIndustrialDetails.style.display = "none";
+		resetFields({
+		  workZoneSelect: "",
+		  workZoneIndustrialExtraLengths: "0",
+		  workZoneIndustrialmonths: "6",
+		  workZoneIndustrialUrgent: "",
+		  workZoneResidentialmonths: "6",
+		  workZoneresidentialUrgent: ""
+		});
+	  }
+	  calculate();
+	});
+	
+	chktempAccess.addEventListener("change", () => {
+	secTempAccess.style.display = chktempAccess.checked ? "block" : "none";
+		  if (!chktempAccess.checked) {
+			resetFields({
+			  tempAccessSelect: "",
+			  tempAccessDaysNum: ""
+			});
+		  }
+		  calculate();
+		});
+
+	chkStormwaterInfo.addEventListener("change", () => {
+	secStormwaterInfo.style.display = chkStormwaterInfo.checked ? "block" : "none";
+		  if (!chkStormwaterInfo.checked) {
+			resetFields({
+			  stormwaterSystemSelect: "",
+			  stormwaterDataPackSelect: ""
+			});
+		  }
+		  calculate();
+		});
+
+	
+	chkRoadReserveHire.addEventListener("change", () => {
+      secRoadResHire.style.display = chkRoadReserveHire.checked ? "block" : "none";
+		  if (!chkRoadReserveHire.checked) {
+			resetFields({
+			  roadReserveHireSelect: ""
+			});
+		  }
+		  calculate();
+		});
+		
+	chkCarShare.addEventListener("change", () => {
+      secCarShare.style.display = chkCarShare.checked ? "block" : "none";
+		  if (!chkCarShare.checked) {
+			resetFields({
+			 carShareSelect: ""
+			});
+		  }
+		  calculate();
+		});
+		
+		
+	chkPrtD.addEventListener("change", () => {
+      secPartD.style.display = chkPrtD.checked ? "block" : "none";
+	  if (!chkPrtD.checked) {
+		partDAdditionalCrossingDetails.style.display = "none";
+		resetFields({
+		  partDTypeSelect: "",
+		  PartDadditionalCrossingSelect: "",
+		  partDstormwaterConnection: "no"
+		  });
+	  }
+	  calculate();
+	});
+
+
+    // Public domain show and hide detail panels
+	function updatePlantDetails() {
+	  plantDetails.style.display = plantNeeded.value === "yes" ? "block" : "none";
+	  calculate();
+	}
+	plantNeeded.addEventListener("change", updatePlantDetails);
+	plantNeeded.addEventListener("input", updatePlantDetails);
+
+		[
+		 "plantChoice",
+		  "plantLanes",
+		  "plantDays"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+	
+		[
+		 "laneClosure", 
+		 "laneClosureLanes", 
+		 "laneClosureDays"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+
+
+		[
+		"towerCrane",
+		"towerMonths"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+
+		const urgentWrapper = document.getElementById("urgentProcessingWrapper");
+
+		const publicDomainTriggers = [
+		  "plantNeeded",
+		  "laneClosure",
+		  "towerCrane"
+		];
+
+		function updateUrgentVisibility() {
+		  const showUrgent = publicDomainTriggers.some(id => {
+			const el = document.getElementById(id);
+			return el && el.value === "yes";
+		  });
+
+		  urgentWrapper.style.display = showUrgent ? "block" : "none";
+
+		  //reset urgent choice if hidden (Not Used)
+		  if (!showUrgent) {
+			document.getElementById("urgentProcessing").value = "no";
+		  }
+
+		  calculate();
+		}
+		
+		publicDomainTriggers.forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", updateUrgentVisibility);
+		  }
+		});
+
+		[
+		"urgentProcessing"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) el.addEventListener("input", calculate);
+		});
+		
+	
+		[
+		"awning","frontageWorks","shoring","otherCivil"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) el.addEventListener("input", calculate);
+		});
+		
+		
+		// Additional Info Notes Section
+		function updateConditionalNotes() {
+		  const showAwning = awning.value === "yes";
+		  const showFrontage = frontageWorks.value === "yes";
+		  const showDrivewayLine = drivewayLineMarkingSelect.value === "yes";
+		  const showStormwaterReport = chkStormwaterInfo.checked && stormwaterSystemSelect.value === "yes";
+		  const showStormwaterdatapack = chkStormwaterInfo.checked && stormwaterDataPackSelect.value === "yes";
+		  const showCarShare = carShareSelect.value === "yes";
+		  const showciviladmin = chkCivilStructure.checked;
+		  
+
+		  document.getElementById("note-awning").style.display =
+			showAwning ? "list-item" : "none";
+
+		  document.getElementById("note-frontage-recheck").style.display =
+			showFrontage ? "list-item" : "none";
+
+		  document.getElementById("note-frontage-inspection").style.display =
+			showFrontage ? "list-item" : "none";
+
+		  // Show the CIVIL STRUCTURE heading if ANY of its notes apply
+		  document.getElementById("civil-structure-notes").style.display =
+			(showciviladmin || showAwning || showFrontage) ? "block" : "none";
+			
+		  document.getElementById("note-Public-Works-Admin-Note").style.display =
+			chkPublicDomain.checked ? "block" : "none";
+			
+		  document.getElementById("note-Civil-Admin-Note").style.display =
+			chkCivilStructure.checked ? "list-item" : "none";
+			
+			document.getElementById("vehicle-footpath-notes").style.display =
+			  chkVehicleFootpath.checked ? "block" : "none";
+			  						
+		  document.getElementById("Driveway-line-marking-notes").style.display =
+			(chkdrivewayLineMarking && showDrivewayLine) ? "block" : "none";	
+			
+		  document.getElementById("stormwater-info-notes").style.display =
+			(showStormwaterReport || showStormwaterdatapack) ? "block" : "none";
+			
+		  document.getElementById("car-Share-Info-notes").style.display =
+			(showCarShare) ? "block" : "none";
+
+							
+		 // Addtional Info Heading – show if ANY note is visible
+		  const showAdditionalFees =
+			awning.value === "yes" ||
+			frontageWorks.value === "yes" ||
+			drivewayLineMarkingSelect.value === "yes" ||
+			stormwaterReport.value === "yes" ||
+			stormwaterData.value === "yes" ||
+			chkdrivewayLineMarking.checked && showDrivewayLine  ||
+			chkStormwaterInfo.checked && showStormwaterReport ||
+			chkStormwaterInfo.checked && showStormwaterdatapack ||
+			carShareSelect.value === "yes" ||
+			chkPublicDomain.checked ||
+			chkCivilStructure.checked ||	
+			chkVehicleFootpath.checked;
+
+		  document.getElementById("addtionalFeesHeading").style.display =
+			showAdditionalFees ? "block" : "none";
+		}
+		
+		[awning, frontageWorks].forEach(el =>
+		  el.addEventListener("change", updateConditionalNotes)
+		);
+		[awning, frontageWorks].forEach(el =>
+		  el.addEventListener("input", updateConditionalNotes)
+		);
+		
+		//document.getElementById("resetBtn").addEventListener("click",  updateConditionalNotes);
+		chkVehicleFootpath.addEventListener("change", updateConditionalNotes);
+		chkdrivewayLineMarking.addEventListener("change", updateConditionalNotes);
+		chkStormwaterInfo.addEventListener("change", updateConditionalNotes);
+		chkCivilStructure.addEventListener("change", updateConditionalNotes);
+		chkPublicDomain.addEventListener("change", updateConditionalNotes);
+		drivewayLineMarkingSelect.addEventListener("input", updateConditionalNotes);
+		stormwaterDataPackSelect.addEventListener("input", updateConditionalNotes);
+		stormwaterSystemSelect.addEventListener("input", updateConditionalNotes);
+		carShareSelect.addEventListener("input", updateConditionalNotes);
+		
+
+
+	function updateLaneDetails() {
+	  laneDetails.style.display = laneClosure.value === "yes" ? "block" : "none";
+	  calculate();
+	}
+	laneClosure.addEventListener("change", updateLaneDetails);
+
+	function updateTowerDetails() {
+	  towerDetails.style.display = towerCrane.value === "yes" ? "block" : "none";
+	  calculate();
+	}
+	towerCrane.addEventListener("change", updateTowerDetails);
+
+    // Hoarding details
+		function updateHoardingDetails() {
+	  const val = hoardingNeeded.value;
+	  hoardingDetails.style.display = val === "yes" ? "block" : "none";
+	  calculate();
+	}
+	
+	hoardingNeeded.addEventListener("change", updateHoardingDetails);
+	
+			[
+	  "hoardingA",
+	  "hoardingB",
+	  "hoardingC",
+	  "hoardingAMetres",
+	  "hoardingAMonths",
+	  "hoardingBMetres",
+	  "hoardingBMonths",
+	  "hoardingCMetres",
+	  "hoardingCMonths"
+	].forEach(id => {
+	  const el = document.getElementById(id);
+	  if (el) {
+		el.addEventListener("change", calculate);
+		el.addEventListener("input", calculate);
+	  }
+	});
+	
+
+    // Vehicle footpath extra crossing visibility (only for Other)
+    footpathType.addEventListener("change", () => {
+      if (footpathType.value === "Other") {
+        additionalCrossingDetails.style.display = "block";
+      } else {
+        additionalCrossingDetails.style.display = "none";
+        additionalCrossing.value = "0";
+      }
+      calculate();
+    });
+	
+		[
+		  "footpathType",
+		  "additionalCrossing",
+		  "streetBoundaryLevels",
+		  "roadOpeningPermit",
+		  "stormwaterConnection"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});				
+	
+	
+	// Full Road Closure visibility (only for yes)
+    TempRoadClosureSelect.addEventListener("change", () => {
+      if (TempRoadClosureSelect.value === "yes") {
+        FullRoadClosureDetails.style.display = "block";
+      } else {
+        FullRoadClosureDetails.style.display = "none";
+        fullRoadClosureDays.value = "0";
+      }
+      calculate();
+    });
+	
+	// Full Road Closure Input changes
+		[
+		"fullRoadClosureDays",
+		"TempRoadClosureSelect"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+		
+	// Driveway Line Marking visibility (only for yes)
+    drivewayLineMarkingSelect.addEventListener("change", () => {
+      if (drivewayLineMarkingSelect.value === "yes") {
+        drivewayLineMarkingDetails.style.display = "block";
+      } else {
+        drivewayLineMarkingDetails.style.display = "none";
+        drivewayLineMarkingNum.value = "0";
+      }
+      calculate();
+    });
+	
+	// Driveway Line Marking Input changes
+		[
+		"drivewayLineMarkingSelect",
+		"drivewayLineMarkingNum"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});	
+			
+	// Works Zone visibility 
+    workZoneSelect.addEventListener("change", () => {
+      if (workZoneSelect.value === "IndustialWZ") {
+        workZoneIndustrialDetails.style.display = "block";
+      } else {
+        workZoneIndustrialDetails.style.display = "none";
+        workZoneIndustrialmonths.value = "0";
+		workZoneIndustrialExtraLengths.value = "0";
+		workZoneIndustrialUrgent.value = "";
+      }
+      calculate();
+    });
+	
+	workZoneSelect.addEventListener("change", () => {
+      if (workZoneSelect.value === "ResidentialWZ") {
+        workZoneResidentialDetails.style.display = "block";
+      } else {
+        workZoneResidentialDetails.style.display = "none";
+        workZoneResidentialmonths.value = "6";
+		workZoneresidentialUrgent.value = "";
+      }
+      calculate();
+    });
+		
+		// Works Zone dropdown changes
+		[
+		"workZoneResidentialmonths",
+		"workZoneIndustrialmonths"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+		
+
+	// Works Zone input changes
+		[
+		"workZoneIndustrialExtraLengths",
+		"workZoneIndustrialUrgent",
+		"workZoneresidentialUrgent"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+
+	// Temp Access dropdown changes
+		[
+		"tempAccessSelect",
+		"tempAccessDaysNum"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+
+		// Stormwater Info dropdown changes
+		[
+		"stormwaterSystemSelect",
+		"stormwaterDataPackSelect"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+
+		// Road Res dropdown changes
+		[
+		"roadReserveHireSelect"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+		
+		// Car Share dropdown changes
+		[
+		"carShareSelect"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+		
+	// Part D extra crossing visibility (only for Other)
+    partDTypeSelect.addEventListener("change", () => {
+      if (partDTypeSelect.value === "Other") {
+        partDAdditionalCrossingDetails.style.display = "block";
+      } else {
+        partDAdditionalCrossingDetails.style.display = "none";
+        PartDadditionalCrossingSelect.value = "0";
+      }
+      calculate();
+    });
+		// Part D dropdown changes
+		[
+		"partDAdditionalCrossing",
+		"partDTypeSelect",
+		"partDstormwaterConnection"
+		].forEach(id => {
+		  const el = document.getElementById(id);
+		  if (el) {
+			el.addEventListener("change", calculate);
+			el.addEventListener("input", calculate);
+		  }
+		});
+		
+
+	
+    // Reset button
+	document.getElementById("resetBtn").addEventListener("click", () => {
+
+	  document.querySelectorAll("input, select").forEach(el => {
+		if (el.type === "checkbox") {
+		  el.checked = false;
+		} else if (el.tagName === "SELECT") {
+		  el.value = el.querySelector("option[value='no']") ? "no" : "";
+		} else {
+		  el.value = "";
+		}
+		calculate();
+		updateConditionalNotes();
+	  });
+
+	 // 1 Uncheck permit types
+	  [
+		chkPublicDomain,
+		chkCivilStructure,
+		chkVehicleFootpath,
+		chktempfullRoadClose,
+		chkdrivewayLineMarking,
+		chkworksZone,
+		chktempAccess,
+		chkStormwaterInfo,
+		chkRoadReserveHire,
+		chkCarShare,
+		chkPrtD
+	  ].forEach(cb => cb && (cb.checked = false));
+
+
+	// 2 Reset dropdowns & inputs
+
+	  // Public domain
+	  plantNeeded.value = "no";
+	  plantLanes.value = "";
+	  plantDays.value = "0";
+	  laneClosure.value = "no";
+	  laneClosureLanes.value = "";
+	  laneClosureDays.value = "0";
+	  urgentProcessing.value = "no";
+	  towerCrane.value = "no";
+	  towerMonths.value = "0";
+
+	  // Civil structure
+	  awning.value = "no";
+	  frontageWorks.value = "no";
+	  shoring.value = "no";
+	  otherCivil.value = "no";
+
+	  // Hoardings
+	  resetHoardings();
+
+	  // Vehicle footpath
+	  footpathType.value = "";
+	  additionalCrossing.value = "0";
+	  streetBoundaryLevels.value = "no";
+	  roadOpeningPermit.value = "no";
+	  stormwaterConnection.value = "no";
+
+	  // Temp full road closure
+	  TempRoadClosureSelect.value = "";
+	  fullRoadClosureDays.value = "0";
+
+	  // Driveway line marking
+	  drivewayLineMarkingSelect.value = "";
+	  drivewayLineMarkingNum.value = "0";
+
+	  // Works zones
+	  workZoneSelect.value = "";
+	  workZoneIndustrialExtraLengths.value = "0";
+	  workZoneIndustrialmonths.value = "6";
+	  workZoneIndustrialUrgent.value = "";
+	  workZoneResidentialmonths.value = "6";
+	  workZoneresidentialUrgent.value = "";
+
+	  // Temp access
+	  tempAccessSelect.value = "";
+	  tempAccessDaysNum.value = "";
+
+	  // Stormwater
+	  stormwaterSystemSelect.value = "";
+	  stormwaterDataPackSelect.value = "";
+
+	  // Road reserve hire
+	  roadReserveHireSelect.value = "";
+	  
+	  // Car Share
+	  carShareSelect.value = "";
+	  
+	  // Vehicle footpath
+	  partd.value = "";
+	  PartDadditionalCrossingSelect.value = "0";
+	  partDstormwaterConnection.value = "no";
+
+	// 3 Hide all sections
+	  [
+		secPublicDomain,
+		secCivilStructure,
+		secVehicleFootpath,
+		secFullRoadClosure,
+		secDrivewayLineMarking,
+		secWorksZones,
+		secTempAccess,
+		secStormwaterInfo,
+		secRoadResHire,
+		secCarShare,
+		secPartD
+	  ].forEach(sec => sec && (sec.style.display = "none"));
+	  
+	// 4 Hide all detail panels
+	  plantDetails.style.display = "none";
+	  laneDetails.style.display = "none";
+	  towerDetails.style.display = "none";
+	  hoardingDetails.style.display = "none";
+	  FullRoadClosureDetails.style.display = "none";
+	  drivewayLineMarkingDetails.style.display = "none";
+	  workZoneIndustrialDetails.style.display = "none";
+	  workZoneResidentialDetails.style.display = "none";
+	  tempAccessDetails.style.display = "none";
+	  partDAdditionalCrossingDetails.style.display = "none";
+
+	//5 Clear summary + recalc	 
+		summaryTable.innerHTML = "<tr><td colspan='2'>No permits selected. Please choose at least one permit type above.</td></tr>";
+		calculate();
+				
+	});
+		
+
+    // Print button
+	const printBtn = document.getElementById("printBtn");
+
+	if (printBtn) {
+	  printBtn.addEventListener("click", e => {
+		e.preventDefault(); // critical if inside form
+
+		calculate();
+
+		// Let the browser finish layout before printing
+		requestAnimationFrame(() => {
+		  window.print();
+		});
+	  });
+	}
+
+    // Update timestamp
+    function updateTimestamp() {
+      const now = new Date();
+      const options = {
+        year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      };
+      timestampEl.innerText = "Calculated on: " + now.toLocaleString(undefined, options);
+    }
+
+	
+	document.addEventListener("input", e => {
+	  if (e.target.matches(
+		"input[type='number'], input[type='text'], input[type='range']"
+	  )) {
+		calculate();
+	  }
+	});
+
+	document.addEventListener("input", e => {
+	  if (e.target.matches(
+		"input[type='number'], input[type='text'], input[type='range']"
+	  )) {
+		calculate();
+	  }
+	});
+		
+		
+		function resetHoardings() {
+		  // Reset dropdowns
+		  ["hoardingA", "hoardingB", "hoardingC"].forEach(id => {
+			const el = document.getElementById(id);
+			if (el) el.value = "no";
+		  });
+
+		  // Clear metres & months
+		  [
+			"hoardingAMetres", "hoardingAMonths",
+			"hoardingBMetres", "hoardingBMonths",
+			"hoardingCMetres", "hoardingCMonths"
+		  ].forEach(id => {
+			const el = document.getElementById(id);
+			if (el) el.value = "";
+		  });
+		}
+
+		function updateHoardingDetails() {
+		  const val = document.getElementById("hoardingNeeded").value;
+
+		  if (val === "yes") {
+			hoardingDetails.style.display = "block";
+		  } else {
+			hoardingDetails.style.display = "none";
+			resetHoardings(); // ← key line
+		  }
+
+		  calculate();
+		}
+
+
+
+
+
+
+    //Calculate BLOCK - Main calculation function - builds a grouped summaries per selected section
+
+    function calculate() {
+      const rows = [];
+      let grandTotal = 0;
+
+      // PUBLIC DOMAIN
+      if (chkPublicDomain.checked) {
+        let sectionTotal = 0;
+        let sectionRows = [];
+
+        //Standing Plant
+		const plantChoice = plantNeeded.value;
+        if (plantChoice === "yes") {
+			const lanes = plantLanes.value;
+			const days = parseInt(plantDays.value, 10) || 0;
+            if (lanes && days > 0) {
+			const perDay = lanes === "1"
+				? fees.publicDomain.plantOccupy1PerDay : fees.publicDomain.plantOccupy2PerDay;
+            const cost = perDay * days;
+                sectionRows.push([
+					`Standing Plant – Occupy ${lanes} lane(s) × ${days} day(s)`,
+					`$${money(cost)}`
+				]);
+			sectionTotal += cost;
+            } else {
+			sectionRows.push([
+				`Standing Plant selected — enter lanes and days`, "-"
+			]);
+		  }
+		}
+        // Lane closure
+		const laneChoice = laneClosure.value;
+        if (laneChoice === "yes") {
+          const lanes = laneClosureLanes.value;
+          const days = parseInt(laneClosureDays.value, 10) || 0;
+          if (lanes && days > 0) {
+            const perDay = (lanes === "1") ? fees.publicDomain.laneClosure1PerDay : fees.publicDomain.laneClosure2PerDay;
+            const cost = perDay * days;
+            sectionRows.push([`Lane Closure - Close ${lanes} lane(s) × ${days} day(s)`, `$${money(cost)}`]);
+            sectionTotal += cost;
+          } else {
+            if (lanes && days === 0) {
+              sectionRows.push([`Lane Closure selected — enter days to calculate price`, "-"]);
+            }
+          }
+        }
+        // Urgent processing
+		const urgentChoice = urgentProcessing.value;
+        if (urgentChoice === "yes") {
+          const cost = fees.publicDomain.urgentProcessing;
+          sectionRows.push([`Urgent processing (2 working days)`, `$${money(cost)}`]);
+          sectionTotal += cost;
+        }
+        // Tower Crane
+		const towerChoice = towerCrane.value;
+        if (towerChoice === "yes") {
+          const months = parseInt(towerMonths.value, 10) || 0;
+          // TOC application fee
+          sectionRows.push([`Tower Crane - TOC application fee`, `$${money(fees.publicDomain.towerCraneTOC)}`]);
+          sectionTotal += fees.publicDomain.towerCraneTOC;
+          if (months > 0) {
+            const monthlyCost = fees.publicDomain.towerCraneMonthly * months;
+            sectionRows.push([`Tower Crane - Monthly fee × ${months} month(s)`, `$${money(monthlyCost)}`]);
+            sectionTotal += monthlyCost;
+          } else {
+            sectionRows.push([`Tower Crane - months not entered`, "-"]);
+          }
+        }
+
+       if (sectionRows.length > 0) {
+          sectionRows.push([`Administration Fee (Public Domain)`, `$${money(fees.publicDomain.publicDomainAdmin)}`]);
+          sectionTotal += fees.publicDomain.publicDomainAdmin;
+        }
+        if (sectionRows.length > 0) {
+          rows.push({ 
+		  type: "section", 
+		  title: "Public Domain",
+		  value: `$${money(sectionTotal)}` 
+		  });
+          sectionRows.forEach(r => rows.push({ type: "item", label: r[0], value: r[1] }));
+         // rows.push({ type: "subtotal", total: sectionTotal });
+          grandTotal += sectionTotal;
+        }
+      }
+
+      // CIVIL STRUCTURE
+      if (chkCivilStructure.checked) {
+        let sectionTotal = 0;
+        let sectionRows = [];
+
+        // Awnings
+		const awningChoice = awning.value;
+		if (awningChoice === "yes") {
+		  sectionRows.push([
+			"Awning – Plan review & approval",
+			`$${money(fees.civilStructure.awningPlanReview)}`]);
+		  sectionTotal += fees.civilStructure.awningPlanReview;
+		}
+        // Frontage works
+        const frontageChoice = frontageWorks.value;
+        if (frontageChoice === "yes") {
+          sectionRows.push([`Frontage works - Design review, approval & inspections`, `$${money(fees.civilStructure.frontageDesignReview)}`]);
+          sectionTotal += fees.civilStructure.frontageDesignReview;
+        }
+        // Temporary Shoring
+        const shoringChoice = shoring.value;
+        if (shoringChoice === "yes") {
+          sectionRows.push([`Temporary Shoring`, `$${money(fees.civilStructure.temporaryShoring)}`]);
+          sectionTotal += fees.civilStructure.temporaryShoring;
+        }
+
+        // Hoardings
+		function calcHoarding(type, fixedFee, monthlyRate, metresId, monthsId, label) {
+			  const metres = parseInt(document.getElementById(metresId).value, 10) || 0;
+			  const months = parseInt(document.getElementById(monthsId).value, 10) || 0;
+
+			  sectionRows.push([`${label} – Fixed fee`, `$${money(fixedFee)}`]);
+			  sectionTotal += fixedFee;
+
+			if (metres > 0 && months > 0) {
+			  const monthly = metres * months * monthlyRate;
+			  sectionRows.push([
+				`${label} – ${metres} m × ${months} months`,
+				`$${money(monthly)}`
+			  ]);
+			  sectionTotal += monthly;
+			} else {
+			  sectionRows.push([
+				`${label} – Add length and timeframe`, "-"
+			  ]);
+			}
+		}
+
+			if (document.getElementById("hoardingA").value === "yes") {
+			  calcHoarding(
+				"A",
+				fees.civilStructure.hoardingTypeA,
+				fees.civilStructure.hoardingMonthlyPerMetreA,
+				"hoardingAMetres",
+				"hoardingAMonths",
+				"Hoarding Type A"
+			  );
+			}
+			if (document.getElementById("hoardingB").value === "yes") {
+			  calcHoarding(
+				"B",
+				fees.civilStructure.hoardingTypeB,
+				fees.civilStructure.hoardingMonthlyPerMetreBandC,
+				"hoardingBMetres",
+				"hoardingBMonths",
+				"Hoarding Type B"
+			  );
+			}
+			if (document.getElementById("hoardingC").value === "yes") {
+			  calcHoarding(
+				"C",
+				fees.civilStructure.hoardingTypeC,
+				fees.civilStructure.hoardingMonthlyPerMetreBandC,
+				"hoardingCMetres",
+				"hoardingCMonths",
+				"Hoarding Type C"
+			  );
+			}
+
+        // Other Civil works - note only (quoted)
+        const otherCivilChoice = otherCivil.value;
+        if (otherCivilChoice === "yes") {
+          sectionRows.push([`Other Civil Works (quoted - contact Council)`, `-`]);
+        }
+        // Admin fee for section if any rows added
+        if (sectionRows.length > 0) {
+          sectionRows.push([`Administration Fee (Civil Structure)`, `$${money(fees.civilStructure.civilAdmin)}`]);
+          sectionTotal += fees.civilStructure.civilAdmin;
+        }
+
+        if (sectionRows.length > 0) {
+          rows.push({ 
+		  type: "section", 
+		  title: "Civil Structure Over Public Domain",
+		  value: `$${money(sectionTotal)}`
+		  });
+          sectionRows.forEach(r => rows.push({ type: "item", label: r[0], value: r[1] }));
+          //rows.push({ type: "subtotal", total: sectionTotal });
+          grandTotal += sectionTotal;
+        }
+      }
+
+      // VEHICLE FOOTPATH
+      if (chkVehicleFootpath.checked) {
+        let sectionTotal = 0;
+        let sectionRows = [];
+
+        const vType = footpathType.value;
+        if (vType) {
+          const base = fees.vehicleFootpath[vType] || 0;
+          sectionRows.push([`Vehicle Footpath Crossing – ${footpathType.options[footpathType.selectedIndex].text}`, `$${money(base)}`]);
+		  sectionTotal += base;
+		 
+          // Road reserve inspection auto-added
+          sectionRows.push([`Footway Damage Inspection (Pre and Final) `, `$${money(fees.roadReserveInspection)}`]);
+          sectionTotal += fees.roadReserveInspection;
+          // Additional crossings (only if Other and additional count >0)
+          const addCross = parseInt(additionalCrossing.value, 10) || 0;
+          if (addCross > 0) {
+            const addCost = addCross * fees.additionalCrossing;
+            sectionRows.push([`Additional Crossings (${addCross})`, `$${money(addCost)}`]);
+            sectionTotal += addCost;
+          }
+        } else {sectionRows.push([`Vehicle Footpath Crossing selected — choose a type above`, `$0.00`]);
+        }
+        if (streetBoundaryLevels.value === "yes") {
+          sectionRows.push([`Street Boundary Alignment Levels`, `$${money(fees.streetBoundaryLevels)}`]);
+          sectionTotal += fees.streetBoundaryLevels;
+        }
+        if (roadOpeningPermit.value === "yes") {
+          sectionRows.push([`DA/CDC Related Road Opening Permit`, `$${money(fees.roadOpeningPermit)}`]);
+          sectionTotal += fees.roadOpeningPermit;
+        }
+        if (stormwaterConnection.value === "yes") {
+          sectionRows.push([`Plan & Review and Connection to Stormwater`, `$${money(fees.stormwaterConnection)}`]);
+          sectionTotal += fees.stormwaterConnection;
+        }
+        if (sectionRows.length > 0) {
+          sectionRows.push([`Administration Fee (Vehicle Footpath)`, `$${money(fees.crossingAdmin)}`]);
+          sectionTotal += fees.crossingAdmin;}
+			rows.push({ 
+			type: "section", 
+			title: "Vehicle Footpath Crossing",
+			value: `$${money(sectionTotal)}` 
+			});
+			sectionRows.forEach(r => rows.push({ type: "item", label: r[0], value: r[1] }));
+			//rows.push({ type: "subtotal", total: sectionTotal });
+			grandTotal += sectionTotal;
+		}
+	  
+		// Temp Full Road Closure
+		if (chktempfullRoadClose.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+
+		  const tempChoice = TempRoadClosureSelect.value;
+
+		  if (tempChoice === "yes") {
+			const days = parseInt(fullRoadClosureDays.value, 10) || 0;
+			// Application fee (always applies if yes)
+			sectionRows.push([
+			  "Temp Full Road Closure – Application Fee",
+			  `$${money(fees.tempfullRoadClosurefee.applicationFee)}`
+			]);
+			sectionTotal += fees.tempfullRoadClosurefee.applicationFee;
+			// Daily fee
+			if (days > 0) {
+			  const dailyCost =
+				fees.tempfullRoadClosurefee.fullRoadClosureFeePerDay * days;
+			  sectionRows.push([
+				`Temp Full Road Closure – Daily fee × ${days} day(s)`,
+				`$${money(dailyCost)}`
+			  ]);
+			  sectionTotal += dailyCost;
+			} else {
+			  sectionRows.push([
+				"Temp Full Road Closure – Enter number of days", "-"
+			  ]);
+			}
+		  }
+		  if (sectionRows.length > 0) {
+			rows.push({
+			  type: "section",
+			  title: "Temporary Full Road Closure (Construction)",
+			  value: `$${money(sectionTotal)}`
+			});
+			sectionRows.forEach(r =>
+			  rows.push({ type: "item", label: r[0], value: r[1] })
+			);
+			//rows.push({ type: "subtotal", total: sectionTotal });
+			grandTotal += sectionTotal;
+		  }
+		}
+			 
+
+		// Driveway Line Marking
+		if (chkdrivewayLineMarking.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+
+		  const DrivewayLineChoice = drivewayLineMarkingSelect.value;
+
+		  if (DrivewayLineChoice === "yes") {
+			const Quantity = parseInt(drivewayLineMarkingNum.value, 10) || 0;
+			sectionRows.push([
+			  "Driveway line Marking – First Driveway & Application Fee",
+			  `$${money(fees.drivingLineMarkingfee.applicationFee)}`
+			]);
+			sectionTotal += fees.drivingLineMarkingfee.applicationFee;
+			// Daily fee
+			if (Quantity > 0) {
+			  const QuantityCost =
+				fees.drivingLineMarkingfee.additionalCrossingMarkings * Quantity;
+			  sectionRows.push([
+				`Additional Driveway Line Markings – ${Quantity} Additional Driveways`,
+				`$${money(QuantityCost)}`
+			  ]);
+			  sectionTotal += QuantityCost;
+			} else {
+			  sectionRows.push([
+				"Driveway Line Marking – No Additional Driveways", 	`$0.00`
+			  ]);
+			  }
+			}
+
+		  if (sectionRows.length > 0) {
+			rows.push({
+			  type: "section",
+			  title: "Driveway Lines",
+			  value: `$${money(sectionTotal)}`
+			});
+			sectionRows.forEach(r =>
+			  rows.push({ type: "item", label: r[0], value: r[1] })
+			);
+			//rows.push({ type: "subtotal", total: sectionTotal });
+			grandTotal += sectionTotal;
+		  }
+		}
+
+
+		// Works Zones - 2 parts
+		if (chkworksZone.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+
+		  const wzType = workZoneSelect.value;
+
+		  // Work Zones Industrial Fees
+		  if (wzType === "IndustialWZ") {
+			const extraBlocks = parseInt(workZoneIndustrialExtraLengths.value, 10) || 0;
+			const months = parseInt(workZoneIndustrialmonths.value, 10) || 6;
+			const urgent = workZoneIndustrialUrgent.value === "yes";
+			const baseBlocks = 2; // 12m = 2 x 6m
+			const totalBlocks = baseBlocks + extraBlocks;
+			const totalLength = totalBlocks * 6;
+			const extraMonths = Math.max(0, months - 6);
+			// Base 12m
+			sectionRows.push([
+			  "Works Zone – Industrial (12m base)",
+			  `$${money(fees.worksZonefee.industrial12m)}`
+			]);
+			sectionTotal += fees.worksZonefee.industrial12m;
+			// Extra 6m blocks (approval length)
+			if (extraBlocks > 0) {
+			  const extraLengthCost =
+				fees.worksZonefee.industrial6m * extraBlocks;
+			  sectionRows.push([
+				`Additional length – ${extraBlocks} × 6m (approved ${totalLength}m)`,
+				`$${money(extraLengthCost)}`
+			  ]);
+			  sectionTotal += extraLengthCost;
+			}
+			// Extra months
+			if (extraMonths > 0) {
+			  const monthlyCost =
+				extraMonths *
+				totalBlocks *
+				fees.worksZonefee.industrialadd6m;
+			  sectionRows.push([
+				`Additional duration – ${extraMonths} month(s) × ${totalBlocks} - 6m Lengths`,
+				`$${money(monthlyCost)}`
+			  ]);
+			  sectionTotal += monthlyCost;
+			}
+			// Urgent
+			if (urgent) {
+			  sectionRows.push([
+				"Urgent processing (2 weeks)",
+				`$${money(fees.worksZonefee.industrialUrgent)}`
+			  ]);
+			  sectionTotal += fees.worksZonefee.industrialUrgent;
+			}
+		  }
+
+		  // Work Zones Residential
+		  if (wzType === "ResidentialWZ") {
+			const months = parseInt(workZoneResidentialmonths.value, 10) || 6;
+			const urgent = workZoneresidentialUrgent.value === "yes";
+
+			const totalBlocks = 2; // fixed 12m
+			const extraMonths = Math.max(0, months - 6);
+			// Base 12m
+			sectionRows.push([
+			  "Works Zone – Residential (12m)",
+			  `$${money(fees.worksZonefee.residential12m)}`
+			]);
+			sectionTotal += fees.worksZonefee.residential12m;
+			// Extra months
+			if (extraMonths > 0) {
+			  const monthlyCost =
+				extraMonths *
+				totalBlocks *
+				fees.worksZonefee.residentialadd6m;
+
+			  sectionRows.push([
+				`Additional duration – ${extraMonths} month(s)`,
+				`$${money(monthlyCost)}`
+			  ]);
+			  sectionTotal += monthlyCost;
+			}
+			// Urgent
+			if (urgent) {
+			  sectionRows.push([
+				"Urgent processing (2 weeks)",
+				`$${money(fees.worksZonefee.residentialUrgent)}`
+			  ]);
+			  sectionTotal += fees.worksZonefee.residentialUrgent;
+			}
+		  }
+
+		  // Works Zones Fees Push section
+			if (sectionRows.length) {
+			  rows.push({
+				type: "section",
+				title: "Works Zones",
+				value: `$${money(sectionTotal)}`
+			  });
+
+			  sectionRows.forEach(r =>
+				rows.push({ type: "item", label: r[0], value: r[1] })
+			  );
+
+			  grandTotal += sectionTotal;
+			}
+		}
+
+
+		// Temp Access over Council Land
+		if (chktempAccess.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+
+		  const areaChoice = tempAccessSelect.value;
+		  const daysChoice = tempAccessDaysNum.value;
+
+		if (areaChoice) {
+
+			// Admin fee (always applies)
+			sectionRows.push([
+			  "Temporary Access – Administration fee",
+			  `$${money(fees.tempAccessfee.tempaccessAdminfee)}`
+			]);
+			sectionTotal += fees.tempAccessfee.tempaccessAdminfee;
+
+			// Area bond
+			const areaCost = fees.tempAccessfee[areaChoice];
+			if (areaCost) {
+			  const areaLabel =
+				areaChoice === "upto300m"
+				  ? "Temporary Access – Area up to 300m² (Bond)"
+				  : "Temporary Access – Area over 300m² (Bond)";
+
+			  sectionRows.push([
+				areaLabel,
+				`$${money(areaCost)}`
+			  ]);
+			  sectionTotal += areaCost;
+			}
+
+			// Days fee
+			if (daysChoice) {
+			  const daysCost = fees.tempAccessfee[daysChoice];
+
+			  if (daysCost) {
+				const daysLabelMap = {
+				  oneday: "1 day",
+				  sevendays: "Up to 7 days",
+				  twentyEightdays: "8 to 28 days",
+				  fiftySixdays: "29 to 56 days",
+				  eightyFourdays: "57 to 84 days"
+				};
+
+				sectionRows.push([
+				  `Temporary Access – (${daysLabelMap[daysChoice]})`,
+				  `$${money(daysCost)}`
+				]);
+				sectionTotal += daysCost;
+			  }
+			} else {
+			  sectionRows.push([
+				"Temporary Access – Select Days Access required", "-"
+			  ]);
+			}
+		  }
+
+		  // Push section if anything selected
+		  if (sectionRows.length) {
+			rows.push({
+			  type: "section",
+			  title: "Temporary Access over Council Land",
+				value: `$${money(sectionTotal)}`
+			});
+
+			sectionRows.forEach(r =>
+			  rows.push({ type: "item", label: r[0], value: r[1] })
+			);
+
+			//rows.push({ type: "subtotal", total: sectionTotal });
+			grandTotal += sectionTotal;
+		  }
+		}
+		 
+		// STORMWATER INFORMATION
+		if (chkStormwaterInfo.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+
+		  if (stormwaterSystemSelect.value === "yes") {
+			sectionRows.push([
+			  "Stormwater System Report",
+			  `$${money(fees.StormwaterInfofee.stormwaterSystemReport)}`
+			]);
+			sectionTotal += fees.StormwaterInfofee.stormwaterSystemReport;
+		  }
+
+		  if (stormwaterDataPackSelect.value === "yes") {
+			sectionRows.push([
+			  "Stormwater Modelling Data Package",
+			  `$${money(fees.StormwaterInfofee.supplySWModelingPack)}`
+			]);
+			sectionTotal += fees.StormwaterInfofee.supplySWModelingPack;
+		  }
+
+		  // Only show section if something is selected
+		  if (sectionRows.length > 0) {
+			rows.push({ type: "section", 
+			title: "Stormwater Information", 
+			value: `$${money(sectionTotal)}`});
+			sectionRows.forEach(r =>
+			  rows.push({ type: "item", label: r[0], value: r[1] })
+			);
+			//rows.push({ type: "subtotal", total: sectionTotal });
+			grandTotal += sectionTotal;
+		  }
+		}
+		
+		
+		// ROAD RESERVE HIRE
+		if (chkRoadReserveHire.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+			if (roadReserveHireSelect.value === "yes") {
+			  const hireFee = fees.RoadReserveHirefee.RoadResHire;
+			  const bondFee = fees.RoadReserveHirefee.RoadResBond;
+			  const sectionTotal = hireFee + bondFee;
+			  rows.push({ type: "section",
+			  title: "Road Reserve Hire",
+			  value: `$${money(sectionTotal)}` });
+			  rows.push({
+				type: "item",
+				label: "Road Reserve Hire Fee",
+				value: `$${money(hireFee)}`
+			  });
+			  rows.push({
+				type: "item",
+				label: "Road Reserve Bond",
+				value: `$${money(bondFee)}`
+			  });
+			 // rows.push({type: "subtotal",total: sectionTotal});
+			  grandTotal += sectionTotal;
+			}							
+		}
+		
+		
+		// CAR SHARE
+		if (chkCarShare.checked) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+			if (carShareSelect.value === "yes") {
+			  const CarShareappfee = fees.carSharefee.carshareapplication;
+			  const CarShareInstfee = fees.carSharefee.carShareMarking;
+			  const sectionTotal = CarShareappfee;
+			  rows.push({ type: "section",
+			  title: "Car Share Space",
+			  value: `$${money(sectionTotal)}` });
+			  rows.push({
+				type: "item",
+				label: "Car Share Space",
+				value: `$${money(CarShareappfee)}`
+			  });
+			  rows.push({
+				type: "item",
+				label: "Car Share - Sign and Post Installation",
+				value: `$${money(CarShareInstfee)}`
+			  });
+			 rows.push({
+				type: "item",
+				label: "Car Share - Bay Marking (Quoted By Council)",
+				value: `-`
+			  });
+			 // rows.push({type: "subtotal",total: sectionTotal});
+			  grandTotal += sectionTotal;
+			}							
+		}
+		
+		
+		// PART D – Vehicle Footpath
+if (chkPrtD.checked) {
+  let sectionTotal = 0;
+  let sectionRows = [];
+
+  const vType = partDTypeSelect.value;
+
+  // 1️⃣ Nothing selected
+  if (vType === "") {
+    sectionRows.push([
+      "Part D Vehicle Footpath Crossing selected — choose a Crossing type above",
+      "-"
+    ]);
+
+  // 2️⃣ Explicitly selected "No Crossings" → no fees, no rows
+  } else if (vType === "0") {
+    // Intentionally empty: no charges apply
+
+  // 3️⃣ Valid crossing types
+  } else {
+
+    const base = fees.vehicleFootpath[vType] || 0;
+    sectionRows.push([
+      `Vehicle Footpath Crossing – ${partDTypeSelect.options[partDTypeSelect.selectedIndex].text}`,
+      `$${money(base)}`
+    ]);
+    sectionTotal += base;
+
+    // Included fees
+    sectionRows.push([
+      "Part D Included - Footway Damage Inspection (Pre and Final)",
+      `$${money(fees.roadReserveInspection)}`
+    ]);
+    sectionTotal += fees.roadReserveInspection;
+
+    sectionRows.push([
+      "Part D Included - Street Boundary Alignment Levels",
+      `$${money(fees.streetBoundaryLevels)}`
+    ]);
+    sectionTotal += fees.streetBoundaryLevels;
+
+    sectionRows.push([
+      "Part D Included - DA/CDC Related Road Opening Permit",
+      `$${money(fees.roadOpeningPermit)}`
+    ]);
+    sectionTotal += fees.roadOpeningPermit;
+
+    // Additional crossings (Other only)
+    if (vType === "Other") {
+      const addCross = parseInt(PartDadditionalCrossingSelect.value, 10) || 0;
+      if (addCross > 0) {
+        const addCost = addCross * fees.additionalCrossing;
+        sectionRows.push([
+          `Additional Crossings (${addCross})`,
+          `$${money(addCost)}`
+        ]);
+        sectionTotal += addCost;
+      }
+    }
+
+    // Stormwater
+    if (partDstormwaterConnection.value === "yes") {
+      sectionRows.push([
+        "Plan, Review and Connection to Stormwater",
+        `$${money(fees.stormwaterConnection)}`
+      ]);
+      sectionTotal += fees.stormwaterConnection;
+    }
+
+    // Admin fee (once)
+    sectionRows.push([
+      "Administration Fee (Part D – Combined WP)",
+      `$${money(fees.crossingAdmin)}`
+    ]);
+    sectionTotal += fees.crossingAdmin;
+  }
+
+  // Only render section if something meaningful exists
+  if (sectionRows.length > 0) {
+    rows.push({
+      type: "section",
+      title: "Part D – Combined Development Works Permit",
+      value: `$${money(sectionTotal)}`
+    });
+
+    sectionRows.forEach(r =>
+      rows.push({ type: "item", label: r[0], value: r[1] })
+    );
+
+    grandTotal += sectionTotal;
+  }
+}
+
+	  
+
+      // Render the summary table from rows
+      summaryTable.innerHTML = "";
+      if (rows.length === 0) {
+        summaryTable.innerHTML = "<tr><td colspan='2'>No permits selected. Please choose at least one permit type above.</td></tr>";
+      } else {
+        rows.forEach(r => {
+		if (r.type === "section") {
+		  const tr = document.createElement("tr");
+		  tr.className = "section-row";
+		  if (r.value) {
+			tr.innerHTML = `<td>${r.title}</td>
+			  <td class="item-cost">${r.value}</td>`;
+		  } else {
+			tr.innerHTML = `<td colspan="2">${r.title}</td>`;
+			}
+		  summaryTable.appendChild(tr);
+		} else if (r.type === "item") {
+			  const tr = document.createElement("tr");
+			  tr.innerHTML = `
+				<td class="summary-item-label">${r.label}</td>
+				<td class="summary-item-value">${r.value}</td>
+			  `;
+			  summaryTable.appendChild(tr);
+			} else if (r.type === "subtotal") {
+            const tr = document.createElement("tr");
+            tr.className = "total-row";
+            tr.innerHTML = `<td>Subtotal</td><td>$${money(r.total)}</td>`;
+            summaryTable.appendChild(tr);
+          }
+		  		  
+
+        });
+        // Grand total
+        const grandTr = document.createElement("tr");
+        grandTr.className = "total-row";
+        grandTr.innerHTML = `<td>Total</td><td>$${money(grandTotal)}</td>`;
+        summaryTable.appendChild(grandTr);
+      }
+
+      updateTimestamp();
+    }
+		
+	// end CALCULATION block
+	
+    // initial calculation
+    calculate();
+	
+	
+  </script>
+</body>
+</html>
