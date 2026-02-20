@@ -726,7 +726,7 @@
 			<label style="margin-top:8px;">Number of Months for Works Zone (whole number)</label>
 			<div class="hint">The first 6 Months of the work zone is included in the application.</div>
 			<input id="workZoneIndustrialmonths" type="number" min="6" step="1" value="6" />
-			<label style="margin-top:8px;">Do you need quick approval (within 2 Weeks)</label>
+			<label style="margin-top:8px;">Do you need quick approval (within 4 Weeks)</label>
 		<select id="workZoneIndustrialUrgent">
           <option value="">-- Please Select --</option>
           <option value="yes">Yes, approval is required in 4 Weeks</option>
@@ -739,7 +739,7 @@
 			<label style="margin-top:8px;">Number of Months for Works Zone (whole number)</label>
 			<div class="hint">The first 6 Months of the work zone is included in the application.</div>
 			<input id="workZoneResidentialmonths" type="number" min="6" step="1" value="6" />
-			<label style="margin-top:8px;">Do you need quick approval (within 2 Weeks)</label>
+			<label style="margin-top:8px;">Do you need quick approval (within 4 Weeks)</label>
 		<select id="workZoneresidentialUrgent">
           <option value="">-- Please Select --</option>
           <option value="yes">Yes, approval is required in 4 Weeks</option>
@@ -1393,6 +1393,7 @@
 			chkStormwaterInfo.checked && showStormwaterReport ||
 			chkStormwaterInfo.checked && showStormwaterdatapack ||
 			carShareSelect.value === "yes" ||
+			chkCarShare.checked ||
 			chkPublicDomain.checked ||
 			chkCivilStructure.checked ||	
 			chkVehicleFootpath.checked;
@@ -1414,6 +1415,7 @@
 		chkStormwaterInfo.addEventListener("change", updateConditionalNotes);
 		chkCivilStructure.addEventListener("change", updateConditionalNotes);
 		chkPublicDomain.addEventListener("change", updateConditionalNotes);
+		chkCarShare.addEventListener("change", updateConditionalNotes);
 		drivewayLineMarkingSelect.addEventListener("input", updateConditionalNotes);
 		stormwaterDataPackSelect.addEventListener("input", updateConditionalNotes);
 		stormwaterSystemSelect.addEventListener("input", updateConditionalNotes);
