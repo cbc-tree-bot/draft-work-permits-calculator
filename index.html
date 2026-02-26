@@ -708,7 +708,7 @@
 		
 		<!--Industrial Works Zones -->		
 		<div id="workZoneIndustrialDetails" style="display:none; margin-top:10px;">
-			<label for="WZadditionalLenghts">Work Zones length, if exceeding 12m.</label>
+			<label for="WZadditionalLenghts">Commercial Work Zones length, if exceeding 12m.</label>
 			<div class="hint">Length can only be increased by 6m increments beyond the initial 12m length, regardless of site conditions.</div>
 		<select id="workZoneIndustrialExtraLengths">
           <option value="0">0 - 12m Minimum </option>
@@ -736,6 +736,12 @@
 		
 		<!--Residential Works zones -->		
 		<div id="workZoneResidentialDetails" style="display:none; margin-top:10px;">
+		<label for="WZResidentialLength">Residential Work Zones length</label>
+		<div class="hint">Length can only be between 6m and 12m length. A flat fee applies for both lengthed and will be determined based on your site.</div>
+		<select id="workZoneResidentialExtraLengths">
+          <option value="0">6m Work Zone </option>
+          <option value="1">12m Work Zone</option>
+		  </select>
 			<label style="margin-top:8px;">Number of Months for Works Zone (whole number)</label>
 			<div class="hint">The first 6 Months of the work zone is included in the application.</div>
 			<input id="workZoneResidentialmonths" type="number" min="6" step="1" value="6" />
@@ -1043,6 +1049,8 @@
     const workZoneIndustrialExtraLengths = document.getElementById("workZoneIndustrialExtraLengths");
 	const workZoneIndustrialmonths = document.getElementById("workZoneIndustrialmonths");
 	const workZoneIndustrialUrgent = document.getElementById("workZoneIndustrialUrgent");
+	const WZResidentialLength = document.getElementById("WZResidentialLength");
+	const workZoneResidentialExtraLengths = document.getElementById("workZoneResidentialExtraLengths");
 	const workZoneResidentialmonths = document.getElementById("workZoneResidentialmonths");
 	const workZoneresidentialUrgent = document.getElementById("workZoneresidentialUrgent");
 	const workZoneResidentialDetails = document.getElementById("workZoneResidentialDetails");
@@ -1183,6 +1191,7 @@
 		  workZoneIndustrialExtraLengths: "0",
 		  workZoneIndustrialmonths: "6",
 		  workZoneIndustrialUrgent: "",
+		  workZoneResidentialExtraLengths: "0",		  
 		  workZoneResidentialmonths: "6",
 		  workZoneresidentialUrgent: ""
 		});
@@ -1553,6 +1562,7 @@
         workZoneResidentialDetails.style.display = "block";
       } else {
         workZoneResidentialDetails.style.display = "none";
+		workZoneResidentialExtraLengths.value = "0";
         workZoneResidentialmonths.value = "6";
 		workZoneresidentialUrgent.value = "";
       }
@@ -1576,6 +1586,7 @@
 		[
 		"workZoneIndustrialExtraLengths",
 		"workZoneIndustrialUrgent",
+		"workZoneResidentialExtraLengths",
 		"workZoneresidentialUrgent"
 		].forEach(id => {
 		  const el = document.getElementById(id);
@@ -1729,6 +1740,7 @@
 	  workZoneIndustrialExtraLengths.value = "0";
 	  workZoneIndustrialmonths.value = "6";
 	  workZoneIndustrialUrgent.value = "";
+	  workZoneResidentialExtraLengths.value = "0";
 	  workZoneResidentialmonths.value = "6";
 	  workZoneresidentialUrgent.value = "";
 
@@ -2246,41 +2258,41 @@
 		  }
 
 		  // Work Zones Residential
-		  if (wzType === "ResidentialWZ") {
-			const months = parseInt(workZoneResidentialmonths.value, 10) || 6;
-			const urgent = workZoneresidentialUrgent.value === "yes";
-
-			const totalBlocks = 2; // fixed 12m
-			const extraMonths = Math.max(0, months - 6);
-			// Base 12m
-			sectionRows.push([
-			  "Works Zone – Residential (12m)",
-			  `$${money(fees.worksZonefee.residential12m)}`
-			]);
-			sectionTotal += fees.worksZonefee.residential12m;
-			// Extra months
-			if (extraMonths > 0) {
-			  const monthlyCost =
-				extraMonths *
-				totalBlocks *
-				fees.worksZonefee.residentialadd6m;
-
+			if (wzType === "ResidentialWZ") {
+			  const months = parseInt(workZoneResidentialmonths.value, 10) || 6;
+			  const urgent = workZoneresidentialUrgent.value === "yes";
+			  const lengthSelection = parseInt(workZoneResidentialExtraLengths.value, 10) || 0;
+			  const totalBlocks = lengthSelection === 1 ? 2 : 1;
+			  // Display length text
+			  const displayLength = lengthSelection === 1 ? "12m" : "6m";
+			  const extraMonths = Math.max(0, months - 6);
+			  // Base fee (flat fee regardless of length)
 			  sectionRows.push([
-				`Additional duration – ${extraMonths} month(s)`,
-				`$${money(monthlyCost)}`
+				`Works Zone – Residential (${displayLength})`,
+				`$${money(fees.worksZonefee.residential12m)}`
 			  ]);
-			  sectionTotal += monthlyCost;
+			  sectionTotal += fees.worksZonefee.residential12m;
+			  // Extra months (charged per 6m block)
+			  if (extraMonths > 0) {
+				const monthlyCost =
+				  extraMonths *
+				  totalBlocks *
+				  fees.worksZonefee.residentialadd6m;
+				sectionRows.push([
+				  `Additional duration – ${extraMonths} month(s) (${totalBlocks} × 6m sections)`,
+				  `$${money(monthlyCost)}`
+				]);
+				sectionTotal += monthlyCost;
+			  }
+			  // Urgent processing
+			  if (urgent) {
+				sectionRows.push([
+				  "Urgent processing (within 4 weeks)",
+				  `$${money(fees.worksZonefee.residentialUrgent)}`
+				]);
+				sectionTotal += fees.worksZonefee.residentialUrgent;
+			  }
 			}
-			// Urgent
-			if (urgent) {
-			  sectionRows.push([
-				"Urgent processing (2 weeks)",
-				`$${money(fees.worksZonefee.residentialUrgent)}`
-			  ]);
-			  sectionTotal += fees.worksZonefee.residentialUrgent;
-			}
-		  }
-
 		  // Works Zones Fees Push section
 			if (sectionRows.length) {
 			  rows.push({
@@ -2288,11 +2300,9 @@
 				title: "Works Zones",
 				value: `$${money(sectionTotal)}`
 			  });
-
 			  sectionRows.forEach(r =>
 				rows.push({ type: "item", label: r[0], value: r[1] })
 			  );
-
 			  grandTotal += sectionTotal;
 			}
 		}
