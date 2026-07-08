@@ -283,89 +283,90 @@ fix reset button
     <script>
 	
       // EDITABLE FEES SECTION - update here each year
-      const feeYear = "2025/2026";
+      const feeYear = "2026/2027";
       const fees = {
         vehicleFootpath:  {
-          Single1: 663.50,
-          Single2: 964.00,
-          Dual: 964.00,
-          Other: 903.50,
+          Single1: 691.00,
+          Single2: 1004.00,
+          Dual: 1004.00,
+          Other: 941.00,
         },
-        additionalCrossing: 302.50,
-        roadReserveInspection: 365.50,
-        streetBoundaryLevels: 242.50,
-        roadOpeningPermit: 183.00,
-        stormwaterConnection: 483.00,
-        reinspection: 183.00,
-        reprint: 53.00,
-        crossingAdmin: 122.00,
+        additionalCrossing: 315.00,
+        roadReserveInspection: 381.00,
+        streetBoundaryLevels: 252.50,
+        roadOpeningPermit: 791.00,
+        stormwaterConnection: 503.00,
+        reinspection: 190.50,
+        reprint: 55.50,
+        crossingAdmin: 127.00,
         publicDomain:  {
-          plantOccupy1PerDay: 172.50,
-          plantOccupy2PerDay: 258.50,
-          laneClosure1PerDay: 72.50,
-          laneClosure2PerDay: 107.50,
-          urgentProcessing: 354.50,
-          towerCraneTOC: 378.50,
-          towerCraneMonthly: 830.50,
-          publicDomainAdmin: 122.00,
+          plantOccupy1PerDay: 180.00,
+          plantOccupy2PerDay: 269.50,
+          laneClosure1PerDay: 75.50,
+          laneClosure2PerDay: 112.00,
+          urgentProcessing: 369.50,
+          towerCraneTOC: 394.50,
+          towerCraneMonthly: 865.00,
+          publicDomainAdmin: 127.00,
         },
         civilStructure:  {
-          awningPlanReview: 632.50,
-          awningHourlyAssessment: 159.50,
-          frontageDesignReview: 1828.00,
-          frontagePlanRecheck: 159.50,
-          frontageInspection: 183.00,
-          temporaryShoring: 791.50,
-          hoardingTypeA: 192.50,
-          hoardingTypeB: 392.50,
-          hoardingTypeC: 392.50,
-          hoardingMonthlyPerMetreA: 52.00,
-          hoardingMonthlyPerMetreBandC: 84.00,
-          civilAdmin: 122.00,
+          awningPlanReview: 658.50,
+          awningHourlyAssessment: 166.50,
+          frontageDesignReview: 1903.00,
+          frontagePlanRecheck: 166.50,
+          frontageInspection: 190.50,
+          temporaryShoring: 824.00,
+          hoardingTypeA: 200.50,
+          hoardingTypeB: 409.00,
+          hoardingTypeC: 409.00,
+          hoardingMonthlyPerMetreA: 54.50,
+          hoardingMonthlyPerMetreBandC: 87.50,
+          civilAdmin: 127.00,
         },
         tempfullRoadClosurefee:  {
-          applicationFee: 628.50,
-          fullRoadClosureFeePerDay: 486.50,
+          applicationFee: 654.50,
+          fullRoadClosureFeePerDay: 506.50,
         },
         drivingLineMarkingfee:  {
-          applicationFee: 375.00,
-          additionalCrossingMarkings: 20.00,
+          applicationFee: 390.50,
+          additionalCrossingMarkings: 21.00,
         },
         worksZonefee:  {
-          industrial12m: 6600.00,
-          industrial6m: 2644.50,
-          industrialadd6m: 443.00,
-          industrialUrgent: 624.50,
-          residential12m: 1294.00,
-          residentialadd6m: 304.50,
-          residentialUrgent: 251.50,
+          industrial12m: 6871.00,
+          industrial6m: 2753.00,
+          industrialadd6m: 461.50,
+          industrialUrgent: 650.50,
+          residential12m: 1347.50,
+          residentialadd6m: 317.00,
+          residentialUrgent: 262.00,
         },
         tempAccessfee:  {
-          tempaccessAdminfee: 435.00,
-          upto300m: 2669.50,
-          morethan300m: 5341.50,
-          oneday: 235.50,
-          sevendays: 511.00,
-          twentyEightdays: 1020.50,
-          fiftySixdays: 2039.00,
-          eightyFourdays: 3051.50,
+          tempaccessAdminfee: 453.00,
+          upto300m: 2779.00,
+          morethan300m: 5560.50,
+          oneday: 244.50,
+          sevendays: 532.00,
+          twentyEightdays: 1062.50,
+          fiftySixdays: 2123.00,
+          eightyFourdays: 3177.00,
         },
         StormwaterInfofee:  {
-          stormwaterSystemReport: 315.00,
-          supplySWModelingPack: 779.00,
-          gisSearchplanCopyRate: 53.00,
-          gisSearchplanSearchRate: 124.00,
+          stormwaterSystemReport: 328.00,
+          supplySWModelingPack: 811.00,
+          gisSearchplanCopyRate: 55.50,
+          gisSearchplanSearchRate: 129.50,
         },
         RoadReserveHirefee:  {
-          RoadResHire: 318.00,
-          RoadResBond: 852.50,
+          RoadResHire: 100000.00,
+          RoadResBond: 100000.00,
         },
-	    carSharefee:  {
-          carshareapplication: 318.00,
-          carShareMarking: 804.00,
+        carSharefee: {
+          carshareapplication: 331.50,
+          carShareMarking: 837.00,
         },
         generalAdminFee: 1.00
       };
+
 
     </script>
 
@@ -380,10 +381,7 @@ fix reset button
       </div>
       <div class="form-row" style="margin-left:40px;">
         <label><input type="checkbox" id="chkCivilStructure" style="display:inline-block;"> Civil Structure Over Public Domain</label>
-      </div>
-     <div class="form-row" style="margin-left:40px;">
-	    <label><input type="checkbox" id="chkPrtD" style="display:inline-block;"> Part D - DA/CDC Development Related Vehicle Crossings</label>
-	   </div>	      
+      </div>	      
 	   <div class="form-row" style="margin-left:40px;""border-bottom: 1px solid #eee">
         <label><input type="checkbox" id="chkVehicleFootpath" style="display:inline-block;"> Vehicle Footpath Crossing</label>
       </div>	
@@ -594,11 +592,20 @@ fix reset button
       </div>
     </div>
 
-	<!-- Part D VFC-->
-	<div class="form-section" id="section-Part-D" style="display:none;">
-      <div class="section-header"><span>Part D - DA/CDC related Combined Work Permit Applications</span></div>
+
+<!-- Combined VFC Section -->
+	<div class="form-section" id="section-vehicle-footpath" style="display:none;">
+	<label for="VFCDevelopmentTypeSelect">Vehicle Foot Path Crossing Type</label>
+        <div class="hint">Is your Vehicle Footpath Crossing assicated with Development?</div>
+        <select id="VFCDevelopmentTypeSelect">
+          <option value="">-- Please Select --</option>
+          <option value="partDVFC">Yes, CDC or DA</option>
+          <option value="noDevelopmentVFC">Not Associated with Development</option>
+        </select>
+		
+	<div id="partDVFCPart" style="display:none; margin-top:10px;">
       <div class="form-field">
-	  <div class="hint">The combined Part D Work Permit application is permits that are development (DA or CDC) related. </div>
+	  <div class="hint">The combined Part D Work Permit application provide a similified application for Vehicle footpath Crossings that are development (DA or CDC) related. </div>
 	  <div class="hint">Combined Part D includes fees for:
 	  <ul>
 	  <li>Footpath Damage Inpections (FDI) </li>
@@ -608,16 +615,16 @@ fix reset button
 	  </ul>
 	  You have the option to select a Vehicle Crossing(VFC) and/or Stormwater Conection(SWCP). </a>
 	  </div>
-        <label for="partDType">Part D Vehicle Footpath Crossing Type</label>
+        <label for="partDTypeSelect">Part D Vehicle Footpath Crossing Type</label>
         <div class="hint">Choose the type of development the crossing applies to.</div>
-        <select id="partDTypeSelect">
-          <option value="">-- Please Select --</option>
-          <option value="Single1">Single Dwelling (1 Crossing)</option>
-          <option value="Single2">Single Dwelling (2 Crossings)</option>
-          <option value="Dual">Dual Occupancies</option>
-          <option value="Other">Other Developments (1 Crossing)</option>
-		  <option value= "No">No Crossings</option>
-        </select>
+		<select id="partDTypeSelect">
+		  <option value="">-- Please Select --</option>
+		  <option value="Single1">Single Dwelling (1 Crossing)</option>
+		  <option value="Single2">Single Dwelling (2 Crossings)</option>
+		  <option value="Dual">Dual Occupancies</option>
+		  <option value="Other">Other Developments (1 Crossing)</option>
+		  <option value="No">No Crossings</option>
+		</select>
       </div>
       <div class="form-field" id="partDAdditionalCrossingDetails" style="display:none; margin-left:30px; margin-right:30px;">
         <label for="partDAdditionalCrossing">Additional Crossings</label>
@@ -644,15 +651,14 @@ fix reset button
           <option value="yes">Yes</option>
         </select>
 		 </div>
-    </div>
-
-
-    <!-- VEHICLE FOOTPATH SECTION  -->
-    <div class="form-section" id="section-vehicle-footpath" style="display:none;">
-      <div class="section-header"><span>Vehicle Footpath Crossing</span></div>
+		</div>
+    
+	<div id="nonDevVFCPart" style="display:none; margin-top:10px;">
       <div class="form-field">
+	  <div class="hint">The Vehicle Footpath Crossing application provide a detailed application for Crossings that are not assciated with development. </div>
+	  <div class="hint">The construction of new vehicle footpath crossings must be in association with a hardstand parking area, complying with the requirements of Clause 2.28 of State Environmental Planning Policy (Exempt and Complying Development Codes) 2008. </div>
         <label for="footpathType">Vehicle Footpath Crossing Type</label>
-        <div class="hint">Choose the type of development the crossing applies to.</div>
+        <div class="hint">Choose the type of dwelling the crossing applies to.</div>
         <select id="footpathType">
           <option value="">-- Please Select --</option>
           <option value="Single1">Single Dwelling (1 Crossing)</option>
@@ -710,7 +716,9 @@ fix reset button
           <option value="yes">Yes</option>
         </select>
       </div>
+	  </div>
     </div>
+	
 
 <!-- TRAFFIC WP SECTION -->		
 	<!--Temp Full Road Closure-->
@@ -898,13 +906,7 @@ fix reset button
         </select>
 	</div>
     </div>
-	
-
 		
-
-	
-
-	
 
     <!-- SUMMARY -->
     <div id="summary" class="summary">
@@ -1007,7 +1009,6 @@ fix reset button
     // Permit type checkboxes
     const chkPublicDomain = document.getElementById("chkPublicDomain");
     const chkCivilStructure = document.getElementById("chkCivilStructure");
-	const chkPrtD = document.getElementById("chkPrtD");
     const chkVehicleFootpath = document.getElementById("chkVehicleFootpath");
 	const chktempfullRoadClose = document.getElementById("chktempfullRoadClose");
 	const chkdrivewayLineMarking = document.getElementById("chkdrivewayLineMarking");
@@ -1016,13 +1017,10 @@ fix reset button
 	const chkCarShare = document.getElementById("chkCarShare");
 	const chktempAccess = document.getElementById("chktempAccess");
 	const chkStormwaterInfo = document.getElementById("chkStormwaterInfo");
-
-
 	
     // Section containers
     const secPublicDomain = document.getElementById("section-public-domain");
-    const secCivilStructure = document.getElementById("section-civil-structure");
-	const secPartD = document.getElementById("section-Part-D");
+    const secCivilStructure = document.getElementById("section-civil-structure");	
     const secVehicleFootpath = document.getElementById("section-vehicle-footpath");
     const secFullRoadClosure = document.getElementById("section-temp-FullRoad-Closure");
 	const secDrivewayLineMarking = document.getElementById("section-driveway-line-marking");
@@ -1031,8 +1029,6 @@ fix reset button
 	const secCarShare = document.getElementById("section-Car-Share-Parking");
 	const secTempAccess = document.getElementById("section-Temp-land-Access");
 	const secStormwaterInfo = document.getElementById("section-Stormwater-information");
-
-
 
     // Public Domain controls
     const plantNeeded = document.getElementById("plantNeeded");
@@ -1054,14 +1050,13 @@ fix reset button
 	const otherCivil = document.getElementById("otherCivil");
     const hoardingNeeded = document.getElementById("hoardingNeeded");
     const hoardingDetails = document.getElementById("hoardingDetails");
-
-	// Part-D Controls
-    const partDTypeSelect = document.getElementById("partDTypeSelect");
+  
+    // Vehicle Footpath controls
+	const VFCDevelopmentTypeSelect = document.getElementById("VFCDevelopmentTypeSelect");
+	const partDTypeSelect = document.getElementById("partDTypeSelect");
     const PartDadditionalCrossingSelect = document.getElementById("PartDadditionalCrossingSelect");
     const partDAdditionalCrossingDetails = document.getElementById("partDAdditionalCrossingDetails");
     const partDstormwaterConnection = document.getElementById("partDstormwaterConnection");
-
-    // Vehicle Footpath controls
     const footpathType = document.getElementById("footpathType");
     const additionalCrossing = document.getElementById("additionalCrossing");
     const additionalCrossingDetails = document.getElementById("additionalCrossingDetails");
@@ -1069,13 +1064,14 @@ fix reset button
     const streetBoundaryLevels = document.getElementById("streetBoundaryLevels");
     const roadOpeningPermit = document.getElementById("roadOpeningPermit");
     const stormwaterConnection = document.getElementById("stormwaterConnection");
+	const partDVFCPart = document.getElementById("partDVFCPart");
+	const nonDevVFCPart = document.getElementById("nonDevVFCPart");
 	
 	 // Temp Full Road Closure Controls
     const TempRoadClosureSelect = document.getElementById("TempRoadClosureSelect");
     const fullRoadClosureDays = document.getElementById("fullRoadClosureDays");
 	const FullRoadClosureDetails = document.getElementById("FullRoadClosureDetails");
-	
-	
+		
 	// Driveway line marking Controls
     const drivewayLineMarkingSelect = document.getElementById("drivewayLineMarkingSelect");
     const drivewayLineMarkingNum = document.getElementById("drivewayLineMarkingNum");
@@ -1109,8 +1105,7 @@ fix reset button
     const stormwaterSystemSelect = document.getElementById("stormwaterSystemSelect");
 	const stormwaterReport = document.getElementById("stormwaterSystemSelect");
 	const stormwaterData = document.getElementById("stormwaterDataPackSelect");
-			
-
+		
     // Summary table element
     const summaryTable = document.getElementById("summary-table");
     const timestampEl = document.getElementById("timestamp");
@@ -1120,7 +1115,7 @@ fix reset button
       return val.toFixed(2);
     }
 
-    // Show/hide and reset sections when permit type checkboxes change
+    // Show/hide and reset sections when permit checkboxes change
 		function resetFields(fieldMap) {
 	  Object.entries(fieldMap).forEach(([id, value]) => {
 		const el = document.getElementById(id);
@@ -1173,24 +1168,18 @@ fix reset button
 	  calculate();
 	});
 	
-	chkPrtD.addEventListener("change", () => {
-      secPartD.style.display = chkPrtD.checked ? "block" : "none";
-	  if (!chkPrtD.checked) {
-		partDAdditionalCrossingDetails.style.display = "none";
-		resetFields({
-		  partDTypeSelect: "",
-		  PartDadditionalCrossingSelect: "",
-		  partDstormwaterConnection: "no"
-		  });
-	  }
-	  calculate();
-	});
-	
 	chkVehicleFootpath.addEventListener("change", () => {
       secVehicleFootpath.style.display = chkVehicleFootpath.checked ? "block" : "none";
-	  if (!chkCivilStructure.checked) {
+	  if (!chkVehicleFootpath.checked) {
+		partDVFCPart.style.display = "none";
+		nonDevVFCPart.style.display = "none";
+		partDAdditionalCrossingDetails.style.display = "none";
 		additionalCrossingDetails.style.display = "none";
 		resetFields({
+		  VFCDevelopmentTypeSelect: "",
+		  partDTypeSelect: "",
+		  PartDadditionalCrossingSelect: "",
+		  partDstormwaterConnection: "no",
 		  footpathType: "",
 		  additionalCrossing: "",
 		  footpathDamage: "no",
@@ -1285,7 +1274,6 @@ fix reset button
 		  }
 		  calculate();
 		});
-
 
 
 
@@ -1503,7 +1491,48 @@ fix reset button
 	  }
 	});
 
-	// Part D extra crossing visibility (only for Other)
+	// PartD / VFC visibility
+	VFCDevelopmentTypeSelect.addEventListener("change", () => {
+	  const mode = VFCDevelopmentTypeSelect.value;
+
+	  if (mode === "partDVFC") {
+		partDVFCPart.style.display = "block";
+		nonDevVFCPart.style.display = "none";
+
+		// clear non-dev fields
+		footpathType.value = "";
+		additionalCrossing.value = "0";
+		footpathDamage.value = "no";
+		streetBoundaryLevels.value = "no";
+		roadOpeningPermit.value = "no";
+		stormwaterConnection.value = "no";
+	  } else if (mode === "noDevelopmentVFC") {
+		partDVFCPart.style.display = "none";
+		nonDevVFCPart.style.display = "block";
+
+		// clear Part D fields
+		partDTypeSelect.value = "";
+		PartDadditionalCrossingSelect.value = "0";
+		partDstormwaterConnection.value = "no";
+	  } else {
+		partDVFCPart.style.display = "none";
+		nonDevVFCPart.style.display = "none";
+
+		// clear both sets
+		partDTypeSelect.value = "";
+		PartDadditionalCrossingSelect.value = "0";
+		partDstormwaterConnection.value = "no";
+		footpathType.value = "";
+		additionalCrossing.value = "0";
+		footpathDamage.value = "no";
+		streetBoundaryLevels.value = "no";
+		roadOpeningPermit.value = "no";
+		stormwaterConnection.value = "no";
+	  }
+	  calculate();
+	});
+
+	// Part D extra crossing - Other
     partDTypeSelect.addEventListener("change", () => {
       if (partDTypeSelect.value === "Other") {
         partDAdditionalCrossingDetails.style.display = "block";
@@ -1528,7 +1557,7 @@ fix reset button
 		  }
 		});	
 
-    // Vehicle footpath extra crossing visibility (only for Other)
+    // Vehicle footpath extra crossing Other
     footpathType.addEventListener("change", () => {
       if (footpathType.value === "Other") {
         additionalCrossingDetails.style.display = "block";
@@ -1731,8 +1760,7 @@ fix reset button
 		chktempAccess,
 		chkStormwaterInfo,
 		chkRoadReserveHire,
-		chkCarShare,
-		chkPrtD
+		chkCarShare
 	  ].forEach(cb => cb && (cb.checked = false));
 
 
@@ -1758,12 +1786,10 @@ fix reset button
 	  // Hoardings
 	  resetHoardings();
 	  
-	  // Part D Vehicle footpath
-	  partd.value = "";
-	  PartDadditionalCrossingSelect.value = "0";
-	  partDstormwaterConnection.value = "no";
-
 	  // Vehicle footpath
+	  VFCDevelopmentTypeSelect.value = "";
+	  PartDadditionalCrossingSelect.value = "0";
+	  partDstormwaterConnection.value = "no"; 
 	  footpathType.value = "";
 	  additionalCrossing.value = "0";
 	  footpathDamage.value = "no";
@@ -1815,8 +1841,7 @@ fix reset button
 		secTempAccess,
 		secStormwaterInfo,
 		secRoadResHire,
-		secCarShare,
-		secPartD
+		secCarShare
 	  ].forEach(sec => sec && (sec.style.display = "none"));
 	  
 	// 4 Hide all detail panels
@@ -1829,7 +1854,11 @@ fix reset button
 	  workZoneIndustrialDetails.style.display = "none";
 	  workZoneResidentialDetails.style.display = "none";
 	  tempAccessDetails.style.display = "none";
+	  partDVFCPart.style.display = "none";
+	  nonDevVFCPart.style.display = "none";	  
 	  partDAdditionalCrossingDetails.style.display = "none";
+	  partDVFCPart.style.display = "none";
+	  nonDevVFCPart.style.display = "none";
 
 	//5 Clear summary + recalc	 
 		summaryTable.innerHTML = "<tr><td colspan='2'>No permits selected. Please choose at least one permit type above.</td></tr>";
@@ -2106,145 +2135,165 @@ fix reset button
         }
       }
 	  
-		// PART D – Vehicle Footpath
-		if (chkPrtD.checked) {
-		  let sectionTotal = 0;
-		  let sectionRows = [];
+	// VEHICLE FOOTPATH / PART D COMBINED
+	if (VFCDevelopmentTypeSelect.value === "partDVFC" || VFCDevelopmentTypeSelect.value === "noDevelopmentVFC") {
+	  let sectionTotal = 0;
+	  let sectionRows = [];
 
-		  const vType = partDTypeSelect.value;
+	  const isPartD = VFCDevelopmentTypeSelect.value === "partDVFC";
+	  const isNonDev = VFCDevelopmentTypeSelect.value === "noDevelopmentVFC";
 
-		  // 1️⃣ Nothing selected
-		  if (vType === "") {
+	  // -------------------------
+	  // PART D (development related)
+	  // -------------------------
+	  if (isPartD) {
+		const vType = partDTypeSelect.value;
+
+		if (vType === "") {
+		  sectionRows.push([
+			"Part D Vehicle Footpath Crossing selected — choose a Crossing type above",
+			"-"
+		  ]);
+		} else if (vType === "No") {
+		  // No crossings selected — no charges
+		} else {
+		  const base = fees.vehicleFootpath[vType] || 0;
+		  sectionRows.push([
+			`Vehicle Footpath Crossing – ${partDTypeSelect.options[partDTypeSelect.selectedIndex].text}`,
+			`$${money(base)}`
+		  ]);
+		  sectionTotal += base;
+
+		  sectionRows.push([
+			"Part D Included - Footway Damage Inspection (Pre and Final)",
+			`$${money(fees.roadReserveInspection)}`
+		  ]);
+		  sectionTotal += fees.roadReserveInspection;
+
+		  sectionRows.push([
+			"Part D Included - Street Boundary Alignment Levels",
+			`$${money(fees.streetBoundaryLevels)}`
+		  ]);
+		  sectionTotal += fees.streetBoundaryLevels;
+
+		  sectionRows.push([
+			"Part D Included - DA/CDC Related Road Opening Permit",
+			`$${money(fees.roadOpeningPermit)}`
+		  ]);
+		  sectionTotal += fees.roadOpeningPermit;
+
+		  if (vType === "Other") {
+			const addCross = parseInt(PartDadditionalCrossingSelect.value, 10) || 0;
+			if (addCross > 0) {
+			  const addCost = addCross * fees.additionalCrossing;
+			  sectionRows.push([
+				`Additional Crossings (${addCross})`,
+				`$${money(addCost)}`
+			  ]);
+			  sectionTotal += addCost;
+			}
+		  }
+
+		  if (partDstormwaterConnection.value === "yes") {
 			sectionRows.push([
-			  "Part D Vehicle Footpath Crossing selected — choose a Crossing type above",
-			  "-"
+			  "Plan, Review and Connection to Stormwater",
+			  `$${money(fees.stormwaterConnection)}`
 			]);
+			sectionTotal += fees.stormwaterConnection;
+		  }
 
-		  // 2️⃣ Explicitly selected "No Crossings" → no fees, no rows
-		  } else if (vType === "0") {
-			// Intentionally empty: no charges apply
+		  sectionRows.push([
+			"Administration Fee (Part D – Combined WP)",
+			`$${money(fees.crossingAdmin)}`
+		  ]);
+		  sectionTotal += fees.crossingAdmin;
+		}
+	  }
 
-		  // 3️⃣ Valid crossing types
-		  } else {
+	  // -------------------------
+	  // NON-DEVELOPMENT VFC
+	  // -------------------------
+	  if (isNonDev) {
+		const vType = footpathType.value;
 
-			const base = fees.vehicleFootpath[vType] || 0;
+		if (vType === "") {
+		  sectionRows.push([
+			"Vehicle Footpath Crossing selected — choose a type above",
+			"-"
+		  ]);
+		} else {
+		  const base = fees.vehicleFootpath[vType] || 0;
+		  sectionRows.push([
+			`Vehicle Footpath Crossing – ${footpathType.options[footpathType.selectedIndex].text}`,
+			`$${money(base)}`
+		  ]);
+		  sectionTotal += base;
+
+		  const addCross = parseInt(additionalCrossing.value, 10) || 0;
+		  if (addCross > 0) {
+			const addCost = addCross * fees.additionalCrossing;
 			sectionRows.push([
-			  `Vehicle Footpath Crossing – ${partDTypeSelect.options[partDTypeSelect.selectedIndex].text}`,
-			  `$${money(base)}`
+			  `Additional Crossings (${addCross})`,
+			  `$${money(addCost)}`
 			]);
-			sectionTotal += base;
+			sectionTotal += addCost;
+		  }
 
-			// Included fees
+		  if (footpathDamage.value === "yes") {
 			sectionRows.push([
-			  "Part D Included - Footway Damage Inspection (Pre and Final)",
+			  "Footway Damage Inspection (Pre and Final)",
 			  `$${money(fees.roadReserveInspection)}`
 			]);
 			sectionTotal += fees.roadReserveInspection;
+		  }
 
+		  if (streetBoundaryLevels.value === "yes") {
 			sectionRows.push([
-			  "Part D Included - Street Boundary Alignment Levels",
+			  "Street Boundary Alignment Levels",
 			  `$${money(fees.streetBoundaryLevels)}`
 			]);
 			sectionTotal += fees.streetBoundaryLevels;
+		  }
 
+		  if (roadOpeningPermit.value === "yes") {
 			sectionRows.push([
-			  "Part D Included - DA/CDC Related Road Opening Permit",
+			  "DA/CDC Related Road Opening Permit",
 			  `$${money(fees.roadOpeningPermit)}`
 			]);
 			sectionTotal += fees.roadOpeningPermit;
-
-			// Additional crossings (Other only)
-			if (vType === "Other") {
-			  const addCross = parseInt(PartDadditionalCrossingSelect.value, 10) || 0;
-			  if (addCross > 0) {
-				const addCost = addCross * fees.additionalCrossing;
-				sectionRows.push([
-				  `Additional Crossings (${addCross})`,
-				  `$${money(addCost)}`
-				]);
-				sectionTotal += addCost;
-			  }
-			}
-			  // Only render section if something meaningful exists
-		  if (sectionRows.length > 0) {
-			rows.push({
-			  type: "section",
-			  title: "Part D – Combined Development Works Permit",
-			  value: `$${money(sectionTotal)}`
-			});
-
-			sectionRows.forEach(r =>
-			  rows.push({ type: "item", label: r[0], value: r[1] })
-			);
-
-			grandTotal += sectionTotal;
 		  }
+
+		  if (stormwaterConnection.value === "yes") {
+			sectionRows.push([
+			  "Plan & Review and Connection to Stormwater",
+			  `$${money(fees.stormwaterConnection)}`
+			]);
+			sectionTotal += fees.stormwaterConnection;
+		  }
+
+		  sectionRows.push([
+			"Administration Fee (Vehicle Footpath)",
+			`$${money(fees.crossingAdmin)}`
+		  ]);
+		  sectionTotal += fees.crossingAdmin;
 		}
-		// Admin fee (once)
-		sectionRows.push([
-		  "Administration Fee (Part D – Combined WP)",
-		  `$${money(fees.crossingAdmin)}`
-		]);
-		sectionTotal += fees.crossingAdmin;
 	  }
-	  
 
-      // VEHICLE FOOTPATH
-      if (chkVehicleFootpath.checked) {
-        let sectionTotal = 0;
-        let sectionRows = [];
+	  // Render section once
+	  if (sectionRows.length > 0) {
+		rows.push({
+		  type: "section",
+		  title: "Vehicle Footpath Crossing",
+		  value: `$${money(sectionTotal)}`
+		});
 
-        const vType = footpathType.value;
-        if (vType) {
-          const base = fees.vehicleFootpath[vType] || 0;
-          sectionRows.push([`Vehicle Footpath Crossing – ${footpathType.options[footpathType.selectedIndex].text}`, `$${money(base)}`]);
-		  sectionTotal += base;
-		 
-          // Road reserve inspection auto-added
-			 // sectionRows.push([`Footway Damage Inspection (Pre and Final) `, `$${money(fees.roadReserveInspection)}`]);
-			 // sectionTotal += fees.roadReserveInspection;
-			  // Additional crossings (only if Other and additional count >0)
-			  
-          const addCross = parseInt(additionalCrossing.value, 10) || 0;
-          if (addCross > 0) {
-            const addCost = addCross * fees.additionalCrossing;
-            sectionRows.push([`Additional Crossings (${addCross})`, `$${money(addCost)}`]);
-            sectionTotal += addCost;
-          }
-        } else {sectionRows.push([`Vehicle Footpath Crossing selected — choose a type above`, `$0.00`]);
-        }
-		
-		if (footpathDamage.value === "yes") {
-          sectionRows.push([`Footway Damage Inspection (Pre and Final) `, `$${money(fees.roadReserveInspection)}`]);
-          sectionTotal += fees.roadReserveInspection;
-        }
-		
-        if (streetBoundaryLevels.value === "yes") {
-          sectionRows.push([`Street Boundary Alignment Levels`, `$${money(fees.streetBoundaryLevels)}`]);
-          sectionTotal += fees.streetBoundaryLevels;
-        }
-        if (roadOpeningPermit.value === "yes") {
-          sectionRows.push([`DA/CDC Related Road Opening Permit`, `$${money(fees.roadOpeningPermit)}`]);
-          sectionTotal += fees.roadOpeningPermit;
-        }
-        if (stormwaterConnection.value === "yes") {
-          sectionRows.push([`Plan & Review and Connection to Stormwater`, `$${money(fees.stormwaterConnection)}`]);
-          sectionTotal += fees.stormwaterConnection;
-        }
-        if (sectionRows.length > 0) {
-          sectionRows.push([`Administration Fee (Vehicle Footpath)`, `$${money(fees.crossingAdmin)}`]);
-          sectionTotal += fees.crossingAdmin;}
-			rows.push({ 
-			type: "section", 
-			title: "Vehicle Footpath Crossing",
-			value: `$${money(sectionTotal)}` 
-			});
-			sectionRows.forEach(r => rows.push({ type: "item", label: r[0], value: r[1] }));
-			//rows.push({ type: "subtotal", total: sectionTotal });
-			grandTotal += sectionTotal;
-		}
+		sectionRows.forEach(r =>
+		  rows.push({ type: "item", label: r[0], value: r[1] })
+		);
 
-
+		grandTotal += sectionTotal;
+	  }
+	}
 	  
 		// Temp Full Road Closure
 		if (chktempfullRoadClose.checked) {
@@ -2305,7 +2354,6 @@ fix reset button
 			  `$${money(fees.drivingLineMarkingfee.applicationFee)}`
 			]);
 			sectionTotal += fees.drivingLineMarkingfee.applicationFee;
-			// Daily fee
 			if (Quantity > 0) {
 			  const QuantityCost =
 				fees.drivingLineMarkingfee.additionalCrossingMarkings * Quantity;
@@ -2607,17 +2655,6 @@ fix reset button
 		  }
 		}
 	
-
-    // Stormwater
-    if (partDstormwaterConnection.value === "yes") {
-      sectionRows.push([
-        "Plan, Review and Connection to Stormwater",
-        `$${money(fees.stormwaterConnection)}`
-      ]);
-      sectionTotal += fees.stormwaterConnection;
-    }
-
-
 
       // Render the summary table from rows
       summaryTable.innerHTML = "";
