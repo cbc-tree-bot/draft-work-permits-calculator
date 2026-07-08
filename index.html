@@ -2136,164 +2136,166 @@ fix reset button
       }
 	  
 	// VEHICLE FOOTPATH / PART D COMBINED
-	if (VFCDevelopmentTypeSelect.value === "partDVFC" || VFCDevelopmentTypeSelect.value === "noDevelopmentVFC") {
-	  let sectionTotal = 0;
-	  let sectionRows = [];
+		if (
+		  VFCDevelopmentTypeSelect.value === "partDVFC" ||
+		  VFCDevelopmentTypeSelect.value === "noDevelopmentVFC"
+		) {
+		  let sectionTotal = 0;
+		  let sectionRows = [];
+		  const isPartD = VFCDevelopmentTypeSelect.value === "partDVFC";
+		  const isNonDev = VFCDevelopmentTypeSelect.value === "noDevelopmentVFC";
 
-	  const isPartD = VFCDevelopmentTypeSelect.value === "partDVFC";
-	  const isNonDev = VFCDevelopmentTypeSelect.value === "noDevelopmentVFC";
-
-	  // -------------------------
-	  // PART D (development related)
-	  // -------------------------
-	  if (isPartD) {
-		const vType = partDTypeSelect.value;
-
-		if (vType === "") {
-		  sectionRows.push([
-			"Part D Vehicle Footpath Crossing selected — choose a Crossing type above",
-			"-"
-		  ]);
-		} else if (vType === "No") {
-		  // No crossings selected — no charges
-		} else {
-		  const base = fees.vehicleFootpath[vType] || 0;
-		  sectionRows.push([
-			`Vehicle Footpath Crossing – ${partDTypeSelect.options[partDTypeSelect.selectedIndex].text}`,
-			`$${money(base)}`
-		  ]);
-		  sectionTotal += base;
-
-		  sectionRows.push([
-			"Part D Included - Footway Damage Inspection (Pre and Final)",
-			`$${money(fees.roadReserveInspection)}`
-		  ]);
-		  sectionTotal += fees.roadReserveInspection;
-
-		  sectionRows.push([
-			"Part D Included - Street Boundary Alignment Levels",
-			`$${money(fees.streetBoundaryLevels)}`
-		  ]);
-		  sectionTotal += fees.streetBoundaryLevels;
-
-		  sectionRows.push([
-			"Part D Included - DA/CDC Related Road Opening Permit",
-			`$${money(fees.roadOpeningPermit)}`
-		  ]);
-		  sectionTotal += fees.roadOpeningPermit;
-
-		  if (vType === "Other") {
-			const addCross = parseInt(PartDadditionalCrossingSelect.value, 10) || 0;
-			if (addCross > 0) {
-			  const addCost = addCross * fees.additionalCrossing;
+		  // PART D Crossings
+		  if (isPartD) {
+			const vType = partDTypeSelect.value;
+			if (vType === "") {
 			  sectionRows.push([
-				`Additional Crossings (${addCross})`,
-				`$${money(addCost)}`
+				"Part D Vehicle Footpath Crossing selected — choose a Crossing type above",
+				"-"
 			  ]);
-			  sectionTotal += addCost;
+			} else {
+			  // Part D Crossing selection
+			  if (vType === "No") {
+				sectionRows.push([
+				  "Vehicle Footpath Crossing – No Crossings",
+				  "$0.00"
+				]);
+			  } else {
+				const base = fees.vehicleFootpath[vType] || 0;
+				sectionRows.push([
+				  `Vehicle Footpath Crossing – ${partDTypeSelect.options[partDTypeSelect.selectedIndex].text}`,
+				  `$${money(base)}`
+				]);
+				sectionTotal += base;
+				// Part D Additional crossings
+				if (vType === "Other") {
+				  const addCross =
+					parseInt(PartDadditionalCrossingSelect.value,10) || 0;
+
+				  if (addCross > 0) {
+					const addCost =
+					  addCross * fees.additionalCrossing;
+					sectionRows.push([
+					  `Additional Crossings (${addCross})`,
+					  `$${money(addCost)}`
+					]);
+					sectionTotal += addCost;
+				  }
+				}
+			  }
+			  // Included Part D Fees
+			  sectionRows.push([
+				"Part D Included - Footway Damage Inspection (Pre and Final)",
+				`$${money(fees.roadReserveInspection)}`
+			  ]);
+			  sectionTotal += fees.roadReserveInspection;
+			  sectionRows.push([
+				"Part D Included - Street Boundary Alignment Levels",
+				`$${money(fees.streetBoundaryLevels)}`
+			  ]);
+			  sectionTotal += fees.streetBoundaryLevels;
+			  sectionRows.push([
+				"Part D Included - DA/CDC Related Road Opening Permit",
+				`$${money(fees.roadOpeningPermit)}`
+			  ]);
+			  sectionTotal += fees.roadOpeningPermit;
+			  if (partDstormwaterConnection.value === "yes") {
+				sectionRows.push([
+				  "Plan, Review and Connection to Stormwater",
+				  `$${money(fees.stormwaterConnection)}`
+				]);
+				sectionTotal += fees.stormwaterConnection;
+			  }
+			  sectionRows.push([
+				"Administration Fee (Part D – Combined WP)",
+				`$${money(fees.crossingAdmin)}`
+			  ]);
+			  sectionTotal += fees.crossingAdmin;
 			}
 		  }
 
-		  if (partDstormwaterConnection.value === "yes") {
-			sectionRows.push([
-			  "Plan, Review and Connection to Stormwater",
-			  `$${money(fees.stormwaterConnection)}`
-			]);
-			sectionTotal += fees.stormwaterConnection;
+		  // Non Development VFC
+		  if (isNonDev) {
+			const vType = footpathType.value;
+			if (vType === "") {
+			  sectionRows.push([
+				"Vehicle Footpath Crossing selected — choose a type above",
+				"-"
+			  ]);
+			} else {
+			  const base = fees.vehicleFootpath[vType] || 0;
+			  sectionRows.push([
+				`Vehicle Footpath Crossing – ${footpathType.options[footpathType.selectedIndex].text}`,
+				`$${money(base)}`
+			  ]);
+			  sectionTotal += base;
+
+			  // Additional crossings
+			  const addCross =
+				parseInt(additionalCrossing.value,10) || 0;
+			  if (addCross > 0) {
+				const addCost =
+				  addCross * fees.additionalCrossing;
+				sectionRows.push([
+				  `Additional Crossings (${addCross})`,
+				  `$${money(addCost)}`
+				]);
+				sectionTotal += addCost;
+			  }
+			  if (footpathDamage.value === "yes") {
+				sectionRows.push([
+				  "Footway Damage Inspection (Pre and Final)",
+				  `$${money(fees.roadReserveInspection)}`
+				]);
+				sectionTotal += fees.roadReserveInspection;
+			  }
+			  if (streetBoundaryLevels.value === "yes") {
+				sectionRows.push([
+				  "Street Boundary Alignment Levels",
+				  `$${money(fees.streetBoundaryLevels)}`
+				]);
+				sectionTotal += fees.streetBoundaryLevels;
+			  }
+			  if (roadOpeningPermit.value === "yes") {
+				sectionRows.push([
+				  "DA/CDC Related Road Opening Permit",
+				  `$${money(fees.roadOpeningPermit)}`
+				]);
+				sectionTotal += fees.roadOpeningPermit;
+			  }
+			  if (stormwaterConnection.value === "yes") {
+				sectionRows.push([
+				  "Plan & Review and Connection to Stormwater",
+				  `$${money(fees.stormwaterConnection)}`
+				]);
+				sectionTotal += fees.stormwaterConnection;
+			  }
+			  sectionRows.push([
+				"Administration Fee (Vehicle Footpath)",
+				`$${money(fees.crossingAdmin)}`
+			  ]);
+			  sectionTotal += fees.crossingAdmin;
+			}
 		  }
 
-		  sectionRows.push([
-			"Administration Fee (Part D – Combined WP)",
-			`$${money(fees.crossingAdmin)}`
-		  ]);
-		  sectionTotal += fees.crossingAdmin;
+		  if (sectionRows.length > 0) {
+			rows.push({
+			  type:"section",
+			  title: isPartD 
+				? "Vehicle Footpath Crossing – Part D Combined Development Permit"
+				: "Vehicle Footpath Crossing",
+			  value:`$${money(sectionTotal)}`
+			});
+			sectionRows.forEach(r => {
+			  rows.push({
+				type:"item",
+				label:r[0],
+				value:r[1]
+			  });
+			});
+			grandTotal += sectionTotal;
+		  }
 		}
-	  }
-
-	  // -------------------------
-	  // NON-DEVELOPMENT VFC
-	  // -------------------------
-	  if (isNonDev) {
-		const vType = footpathType.value;
-
-		if (vType === "") {
-		  sectionRows.push([
-			"Vehicle Footpath Crossing selected — choose a type above",
-			"-"
-		  ]);
-		} else {
-		  const base = fees.vehicleFootpath[vType] || 0;
-		  sectionRows.push([
-			`Vehicle Footpath Crossing – ${footpathType.options[footpathType.selectedIndex].text}`,
-			`$${money(base)}`
-		  ]);
-		  sectionTotal += base;
-
-		  const addCross = parseInt(additionalCrossing.value, 10) || 0;
-		  if (addCross > 0) {
-			const addCost = addCross * fees.additionalCrossing;
-			sectionRows.push([
-			  `Additional Crossings (${addCross})`,
-			  `$${money(addCost)}`
-			]);
-			sectionTotal += addCost;
-		  }
-
-		  if (footpathDamage.value === "yes") {
-			sectionRows.push([
-			  "Footway Damage Inspection (Pre and Final)",
-			  `$${money(fees.roadReserveInspection)}`
-			]);
-			sectionTotal += fees.roadReserveInspection;
-		  }
-
-		  if (streetBoundaryLevels.value === "yes") {
-			sectionRows.push([
-			  "Street Boundary Alignment Levels",
-			  `$${money(fees.streetBoundaryLevels)}`
-			]);
-			sectionTotal += fees.streetBoundaryLevels;
-		  }
-
-		  if (roadOpeningPermit.value === "yes") {
-			sectionRows.push([
-			  "DA/CDC Related Road Opening Permit",
-			  `$${money(fees.roadOpeningPermit)}`
-			]);
-			sectionTotal += fees.roadOpeningPermit;
-		  }
-
-		  if (stormwaterConnection.value === "yes") {
-			sectionRows.push([
-			  "Plan & Review and Connection to Stormwater",
-			  `$${money(fees.stormwaterConnection)}`
-			]);
-			sectionTotal += fees.stormwaterConnection;
-		  }
-
-		  sectionRows.push([
-			"Administration Fee (Vehicle Footpath)",
-			`$${money(fees.crossingAdmin)}`
-		  ]);
-		  sectionTotal += fees.crossingAdmin;
-		}
-	  }
-
-	  // Render section once
-	  if (sectionRows.length > 0) {
-		rows.push({
-		  type: "section",
-		  title: "Vehicle Footpath Crossing",
-		  value: `$${money(sectionTotal)}`
-		});
-
-		sectionRows.forEach(r =>
-		  rows.push({ type: "item", label: r[0], value: r[1] })
-		);
-
-		grandTotal += sectionTotal;
-	  }
-	}
 	  
 		// Temp Full Road Closure
 		if (chktempfullRoadClose.checked) {
